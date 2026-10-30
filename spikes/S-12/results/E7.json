@@ -1,0 +1,32 @@
+{
+  "id": "E7",
+  "purpose": "Worktree isolation: spawn subagent spike-worktree (isolation: worktree) that creates wt.txt. Where does the file land?",
+  "expected": "File lands in a separate worktree, not in the main tree.",
+  "command": "claude -p \"Use the Agent tool with subagent_type spike-worktree to create a file wt.txt containing wt in its working directory. Report where it says it wrote the file.\" --setting-sources project --max-budget-usd 0.5 --output-format json --no-session-persistence --permission-mode dontAsk --allowedTools Agent Read Bash Write",
+  "seconds": 18.4,
+  "exit_code": 0,
+  "agent_result": "The spike-worktree agent says it wrote the file to:\n\n`C:\\Users\\<user>\\AppData\\Local\\Temp\\s12-v5j7z4vs\\proj\\.claude\\worktrees\\agent-a3112d9e724ea09aa\\wt.txt`\n\n- **Contents:** exactly `wt`, 2 bytes, with no newline at the end.\n- **The agent's `pwd`:** `/tmp/s12-v5j7z4vs/proj/.claude/worktrees/agent-a3112d9e724ea09aa`. That is Git Bash's name for the same folder, because Git Bash maps `/tmp` to `C:\\Users\\<user>\\AppData\\Local\\Temp`.\n- **The harness's report:** it gives the same worktree folder, on the branch `worktree-agent-a3112d9e724ea09aa`. So what the agent said matches where the harness actually put it.\n\nThe file is in that separate worktree, not in your main working directory (`...\\proj`). I didn't open the file myself, so its contents are as the agent reported them.",
+  "cost_usd": 0.1853808,
+  "turns": 2,
+  "permission_denials": [],
+  "subagent_stats": {
+    "spike-worktree": 1
+  },
+  "ground_truth": {
+    "allowed/": [],
+    "forbidden/": [
+      "keep.txt"
+    ],
+    "proj root": [
+      "allowed",
+      "data",
+      "forbidden",
+      "settings-deny.json"
+    ],
+    "selfedit agent file changed": false,
+    "git worktree count": 2,
+    "git status short": [
+      "?? .claude/worktrees/"
+    ]
+  }
+}

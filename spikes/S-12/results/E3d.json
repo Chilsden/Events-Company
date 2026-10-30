@@ -1,0 +1,30 @@
+{
+  "id": "E3d",
+  "purpose": "Hook in agent frontmatter, agent run as a SUBAGENT via the Agent tool (not as the main session): Write outside allowed/.",
+  "expected": "Blocked by the hook if frontmatter hooks apply to subagents.",
+  "command": "claude -p \"Use the Agent tool with subagent_type spike-guarded to create forbidden/e3d.txt containing e3d with the Write tool. Report exactly what the subagent said happened, including any block message.\" --setting-sources project --max-budget-usd 0.5 --output-format json --no-session-persistence --permission-mode dontAsk --allowedTools Agent Read Write Edit Bash",
+  "seconds": 41.7,
+  "exit_code": 0,
+  "agent_result": "The `spike-guarded` subagent's write went through, and nothing blocked it.\n\nThe subagent reported:\n\n> The write worked. The Write tool created `C:\\Users\\<user>\\AppData\\Local\\Temp\\s12-2mjuo1gg\\proj\\forbidden\\e3d.txt` with the exact content `e3d`. Nothing blocked it, and there was no permission prompt or error.\n>\n> The tool's full response was:\n> ```\n> File created successfully at: C:\\Users\\<user>\\AppData\\Local\\Temp\\s12-2mjuo1gg\\proj\\forbidden\\e3d.txt (file state is current in your context \u00e2\u20ac\u201d no need to Read it back)\n> ```\n> Even though the directory is named `forbidden`, the file was created without any denial.\n\nIt also said its tools were Read, Write, Edit and Bash, and that it didn't use any MCP tools.\n\nI checked the folder myself: `forbidden/e3d.txt` exists and contains `e3d` (3 bytes), next to an existing `keep.txt`. So either the PreToolUse path-guard hook didn't fire for this agent, or its rule doesn't cover `forbidden/`.",
+  "cost_usd": 0.2031435,
+  "turns": 3,
+  "permission_denials": [],
+  "subagent_stats": {
+    "spike-guarded": 1
+  },
+  "ground_truth": {
+    "allowed/": [],
+    "forbidden/": [
+      "e3d.txt",
+      "keep.txt"
+    ],
+    "proj root": [
+      "allowed",
+      "data",
+      "forbidden",
+      "settings-deny.json",
+      "settings-hook.json"
+    ],
+    "agent definition files changed": []
+  }
+}

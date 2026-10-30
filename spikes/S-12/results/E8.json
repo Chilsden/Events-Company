@@ -1,0 +1,67 @@
+{
+  "id": "E8",
+  "purpose": "Does a settings-level PreToolUse hook payload identify the calling subagent? (Needed for per-role path limits.)",
+  "expected": "Unknown. If the payload names the agent, one hook script could enforce a path list per role.",
+  "command": "claude -p \"Use the Agent tool with subagent_type spike-open to create allowed/e8.txt containing e8 using the Write tool. Then report briefly what happened.\" --setting-sources project --max-budget-usd 0.5 --output-format json --no-session-persistence --permission-mode dontAsk --allowedTools Agent Read Write Edit Bash --settings C:\\Users\\<user>\\AppData\\Local\\Temp\\s12-r7e3ydi9\\proj\\settings-logging-hook.json",
+  "seconds": 15.7,
+  "exit_code": 0,
+  "agent_result": "The spike-open subagent created `<home>\\AppData\\Local\\Temp\\s12-r7e3ydi9\\proj\\allowed\\e8.txt` with the content `e8`. It made one Write call, which reported \"File created successfully\" with no errors or blocks. I'm going by its report and didn't open the file myself.",
+  "cost_usd": 0.3810163999999999,
+  "turns": 2,
+  "permission_denials": [],
+  "subagent_stats": {
+    "spike-open": 1
+  },
+  "ground_truth": {
+    "allowed/": [
+      "e8.txt"
+    ],
+    "forbidden/": [
+      "keep.txt"
+    ],
+    "proj root": [
+      "allowed",
+      "data",
+      "forbidden",
+      "hooklog.jsonl",
+      "settings-deny.json",
+      "settings-hook.json",
+      "settings-logging-hook.json"
+    ],
+    "agent definition files changed": [],
+    "hook payload log": [
+      {
+        "keys": [
+          "agent_id",
+          "agent_type",
+          "cwd",
+          "effort",
+          "hook_event_name",
+          "permission_mode",
+          "prompt_id",
+          "scratchpad_dir",
+          "session_id",
+          "tool_input",
+          "tool_name",
+          "tool_use_id",
+          "transcript_path"
+        ],
+        "slim": {
+          "session_id": "str",
+          "transcript_path": "str",
+          "cwd": "str",
+          "scratchpad_dir": "str",
+          "prompt_id": "str",
+          "permission_mode": "dontAsk",
+          "agent_id": "a268498cc16144bed",
+          "agent_type": "spike-open",
+          "effort": "dict",
+          "hook_event_name": "PreToolUse",
+          "tool_name": "Write",
+          "tool_input": "dict",
+          "tool_use_id": "str"
+        }
+      }
+    ]
+  }
+}
