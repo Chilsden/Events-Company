@@ -30,7 +30,6 @@
       "Bash(rm *)",
       "Bash(curl *)",
       "Bash(wget *)",
-      "WebFetch(domain:localhost)",
       "Bash(git -C *)",
       "Bash(git switch*)",
       "Bash(git checkout*)",
@@ -47,7 +46,9 @@
       "PowerShell(git merge*)",
       "PowerShell(Remove-Item*)",
       "PowerShell(Invoke-WebRequest*)",
-      "PowerShell(Invoke-RestMethod*)"
+      "PowerShell(Invoke-RestMethod*)",
+      "Edit(CLAUDE.local.md)",
+      "Edit(.git/**)"
     ],
     "ask": [
       "Bash(git push*)",
@@ -63,10 +64,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python -I \"$CLAUDE_PROJECT_DIR/.claude/hooks/agent_guard.py\""
+            "command": "python -I \"${CLAUDE_PROJECT_DIR}/.claude/hooks/agent_guard.py\"",
+            "onFailure": "block"
           }
         ]
       }
     ]
-  }
+  },
+  "enableAllProjectMcpServers": false
 }

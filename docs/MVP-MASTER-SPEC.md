@@ -733,7 +733,8 @@ No dates are promised until scope and feasibility are understood. Each milestone
 | `.claude/agents/` | Exists (six project-level role definitions, draft; tool lists tested, other limits are convention) |
 | `spikes/S-12/` | Exists (disposable synthetic experiment fixtures, runner and results) |
 | [docs/research/agent-security-hardening-proposal.md](research/agent-security-hardening-proposal.md) | Exists (draft proposal: threat model, fail-closed hook, B-04 plan; not activated; founder decision pending) |
-| `docs/proposals/agent-hardening/` | Exists (proposed settings, draft guard script and its local tests; not installed) |
+| `docs/proposals/agent-hardening/` | Exists (proposed settings, draft guard script and tests, validation folder builder and runbook; not installed) |
+| [docs/research/agent-activation-validation.md](research/agent-activation-validation.md) | Exists (T-044: documentation check, validation preparation, activation checks not yet run) |
 | [docs/prompts/phase-0-final-corrections.md](prompts/phase-0-final-corrections.md) | Exists (instruction prompt with Phil's final decisions) |
 | `docs/requirements.md` | Not yet created; created when requirements are detailed beyond this spec |
 | `docs/market-research.md` | Not yet created; follows research |

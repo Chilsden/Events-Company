@@ -4,6 +4,8 @@ Status: draft. Nothing here is installed. No `.claude/settings.json` exists, no 
 
 Evidence labels (CLAUDE.md section 7): **observed** = seen in an S-12 run or in the local tests described in section 5; **source claim** = from Claude Code documentation or my background knowledge, not verified here; **unverified** = nobody has tested it; **proposal** = a design choice for the founder.
 
+> **Correction after documentation check (2026-10-30, see [agent-activation-validation.md](agent-activation-validation.md)).** By default Claude Code treats a hook that is missing, fails to start or exits with a code other than 2 as a non-blocking error and lets the action go ahead. So the statements below that a missing or crashing hook leads to a prompt (T5, design principle 2, the summary) are wrong unless the hook sets `"onFailure": "block"` (documented for v2.1.295 and later). The proposed settings now set it; checks A3, A4, F1 and F2 must confirm it. Other changes: the hook command uses `${CLAUDE_PROJECT_DIR}`; the meaningless `WebFetch(domain:localhost)` rule is removed; `enableAllProjectMcpServers` is false. The documentation says `Write(path)` deny rules never match, while S-12 observed one holding, so both `Write` and `Edit` forms are kept. A1 to A10 have not been run.
+
 ## 1. Summary and decisions needed
 
 - The plan removes the shell from four of six roles, confines the Orchestrator to a fixed list of read-only Git commands, and runs the Software Engineer's shell only in a separate controlled environment. Writes by every role are confined by a default-deny hook plus deny rules. Nothing relies on role prose.
