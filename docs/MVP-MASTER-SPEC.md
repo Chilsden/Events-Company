@@ -726,7 +726,9 @@ No dates are promised until scope and feasibility are understood. Each milestone
 | [docs/prompts/phase-0-fresh-independent-review.md](prompts/phase-0-fresh-independent-review.md) | Exists (instruction prompt) |
 | [docs/prompts/phase-0-independent-acceptance-and-checkpoint.md](prompts/phase-0-independent-acceptance-and-checkpoint.md) | Exists (instruction prompt with Phil's Milestone 1 authorisation) |
 | [docs/Reviews/phase-0-independent-acceptance-report.md](Reviews/phase-0-independent-acceptance-report.md) | Exists (review by a fresh-context subagent of commit `53bd0d0`; accept with changes; Phil has not yet read it) |
-| [docs/prompts/milestone-1-first-task-proposal.md](prompts/milestone-1-first-task-proposal.md) | Exists (proposed implementation prompt; not started) |
+| [docs/prompts/milestone-1-first-task-proposal.md](prompts/milestone-1-first-task-proposal.md) | Exists (B-01 prompt; run 2026-10-30, see the capability note) |
+| [docs/research/claude-code-capabilities.md](research/claude-code-capabilities.md) | Exists (B-01 observed capabilities and limits; reviewed by a fresh-context subagent; Phil's read pending) |
+| [docs/research/stack-and-hosting-shortlist.md](research/stack-and-hosting-shortlist.md) | Exists (A-08 draft shortlist, no decision; Phil's review pending) |
 | [docs/prompts/phase-0-final-corrections.md](prompts/phase-0-final-corrections.md) | Exists (instruction prompt with Phil's final decisions) |
 | `docs/requirements.md` | Not yet created; created when requirements are detailed beyond this spec |
 | `docs/market-research.md` | Not yet created; follows research |
