@@ -732,6 +732,8 @@ No dates are promised until scope and feasibility are understood. Each milestone
 | [docs/research/s-12-agent-isolation-results.md](research/s-12-agent-isolation-results.md) | Exists (B-02 and S-12 results; draft; Phil's read and decision on the permission model pending) |
 | `.claude/agents/` | Exists (six project-level role definitions, draft; tool lists tested, other limits are convention) |
 | `spikes/S-12/` | Exists (disposable synthetic experiment fixtures, runner and results) |
+| [docs/research/agent-security-hardening-proposal.md](research/agent-security-hardening-proposal.md) | Exists (draft proposal: threat model, fail-closed hook, B-04 plan; not activated; founder decision pending) |
+| `docs/proposals/agent-hardening/` | Exists (proposed settings, draft guard script and its local tests; not installed) |
 | [docs/prompts/phase-0-final-corrections.md](prompts/phase-0-final-corrections.md) | Exists (instruction prompt with Phil's final decisions) |
 | `docs/requirements.md` | Not yet created; created when requirements are detailed beyond this spec |
 | `docs/market-research.md` | Not yet created; follows research |
