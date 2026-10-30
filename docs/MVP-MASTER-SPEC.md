@@ -22,7 +22,7 @@ All five stay in scope. Sequencing (section 14) orders the work; it does not rem
 
 The MVP has two workstreams: the customer-facing platform (sections 4 and 5) and the internal AI agent workforce that helps build and run the business (section 6.10). The workforce is not a post-MVP extra.
 
-**Provenance of Phase 0 detail.** Sections marked "(P0)" add detail from the founder's Phase 0 discovery notes in [the Phase 0 prompt](prompts/phase-0-consolidation-and-mvp-planning.md). Where those notes conflicted with an earlier decision in this spec, the conflict is listed in section 16.1. Phil decided C-1 to C-8 on 2026-10-30; those decisions are recorded there and in `docs/decisions/`. C-9 (Git approval) is still open.
+**Provenance of Phase 0 detail.** Sections marked "(P0)" add detail from the founder's Phase 0 discovery notes in [the Phase 0 prompt](prompts/phase-0-consolidation-and-mvp-planning.md). Where those notes conflicted with an earlier decision in this spec, the conflict is listed in section 16.1. Phil decided C-1 to C-8 on 2026-10-30; those decisions are recorded there and in `docs/decisions/`. C-9 (Git approval) was resolved for documentation checkpoints on the task branch only (see its row).
 
 **Current state:** documentation only. No application code, stack, hosting provider, customer research, market research or pricing validation exists yet. Everything below about customers, prices and demand is unvalidated.
 
@@ -725,6 +725,8 @@ No dates are promised until scope and feasibility are understood. Each milestone
 | [docs/Reviews/phase-0-final-corrections-summary.md](Reviews/phase-0-final-corrections-summary.md) | Exists (change summary for the independent reviewer) |
 | [docs/prompts/phase-0-fresh-independent-review.md](prompts/phase-0-fresh-independent-review.md) | Exists (instruction prompt) |
 | [docs/prompts/phase-0-independent-acceptance-and-checkpoint.md](prompts/phase-0-independent-acceptance-and-checkpoint.md) | Exists (instruction prompt with Phil's Milestone 1 authorisation) |
+| [docs/Reviews/phase-0-independent-acceptance-report.md](Reviews/phase-0-independent-acceptance-report.md) | Exists (review by a fresh-context subagent of commit `53bd0d0`; accept with changes; Phil has not yet read it) |
+| [docs/prompts/milestone-1-first-task-proposal.md](prompts/milestone-1-first-task-proposal.md) | Exists (proposed implementation prompt; not started) |
 | [docs/prompts/phase-0-final-corrections.md](prompts/phase-0-final-corrections.md) | Exists (instruction prompt with Phil's final decisions) |
 | `docs/requirements.md` | Not yet created; created when requirements are detailed beyond this spec |
 | `docs/market-research.md` | Not yet created; follows research |
@@ -768,7 +770,7 @@ Items below are unresolved. Where a design is proposed, the decision record is n
 
 ### 16.1 Conflict register: Phase 0 notes versus existing documents
 
-C-1 to C-8 were decided by Phil on 2026-10-30. The decision is the resolution recorded in the table and in the linked decision record. Where a decision replaced an earlier spec position (C-3), the table says so. C-9 is still open.
+C-1 to C-8 were decided by Phil on 2026-10-30. The decision is the resolution recorded in the table and in the linked decision record. Where a decision replaced an earlier spec position (C-3), the table says so. C-9 was resolved for documentation checkpoints on the task branch; its row says what stays prohibited.
 
 | ID | Phase 0 notes say | Earlier position | Resolution | Status |
 |---|---|---|---|---|
@@ -780,4 +782,4 @@ C-1 to C-8 were decided by Phil on 2026-10-30. The decision is the resolution re
 | C-6 | Many languages "required"; English UK "initial" | Not previously specified | **Resolved:** English (UK) is the fully supported launch language; internationalisation supports progressive localisation ([0012](decisions/0012-english-uk-launch-language-progressive-localisation.md)) | Resolved 2026-10-30; later-language order open |
 | C-7 | Owner and collaborator permissions the same | Not previously specified | **Resolved:** account owners and event collaborators are distinct roles. The account owner controls account-level actions and permanent event deletion; event collaborators manage ordinary event operations ([0011](decisions/0011-owner-only-account-actions.md)) | Resolved 2026-10-30; several-owners, event creation and ownership recovery open |
 | C-8 | "Free tier is required" | Free Check-in Studio is a hypothesis (9.1) | **Resolved:** Check-in Studio always has a free entry point ([0009](decisions/0009-check-in-studio-permanent-free-entry-point.md)). Pricing, tiers, subscriptions, payments and paid restrictions are deferred past the MVP ([0010](decisions/0010-defer-monetisation-until-after-mvp.md)) | Resolved 2026-10-30; free scope open |
-| C-9 | Agents may make routine task-branch commits and pushes | Same in `CLAUDE.md` section 5, with no Git steps authorised for this task | Commit and push wait for Phil's approval | Approval of Git steps |
+| C-9 | Agents may make routine task-branch commits and pushes | Same in `CLAUDE.md` section 5, with no Git steps authorised for the earlier documentation tasks | **Resolved in part:** in `docs/prompts/phase-0-independent-acceptance-and-checkpoint.md` Phil authorised a documentation draft commit and push of the existing `docs/update-master-spec` branch, and a final checkpoint commit and push after the independent review. **Still prohibited without Phil's separate approval:** merging into `main`, pushing `main`, force-pushing, rewriting history, production deployment | Authorised for documentation checkpoints on `docs/update-master-spec` only (2026-10-30). Draft checkpoint `53bd0d0` pushed and verified |

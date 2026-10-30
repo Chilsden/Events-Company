@@ -42,7 +42,7 @@ Milestone 2 touches the five products only as far as the five steps need. Signat
 
 **Product order (recommendation):** Check-in Studio first (source of guests); Signature Mosaic next (shared rendering); then ShareWall; Lucky Draw needs check-in data; Event Gallery needs the media foundation. Confirm in phase 0.
 
-**Parallelisable:** epic B; the early track (O-10, M-14, M-08); the design-stage threat model (M-09) and rendering spike S-05 beside the stack work; internationalisation (K-01 to K-03) once the repository exists. N-05 is post-MVP research. Parallel agents must have separate file ownership in the ledger.
+**Parallelisable:** epic B; the early track (O-10, M-14, M-08); rendering spike S-05 beside the stack work (the design-stage threat model M-09 starts after the stack decision A-01 and before D-01 and D-07); internationalisation (K-01 to K-03) once the repository exists. N-05 is post-MVP research. Parallel agents must have separate file ownership in the ledger.
 
 **Technical spikes before commitment:** S-01 to S-13. All spikes use synthetic data.
 
