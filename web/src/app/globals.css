@@ -79,3 +79,25 @@ code { overflow-wrap: anywhere; }
 .audit { border-collapse: collapse; width: 100%; min-width: 36rem; }
 .audit th, .audit td { text-align: left; padding: .5rem .6rem; border-bottom: 1px solid var(--border); vertical-align: top; }
 .audit th { background: var(--card); }
+.pad-frame { border: 2px solid var(--border); border-radius: 8px; background: var(--card); touch-action: none; }
+.pad-frame:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.pad { display: block; width: 100%; height: auto; aspect-ratio: 600 / 240; color: var(--fg); touch-action: none; cursor: crosshair; user-select: none; -webkit-user-select: none; }
+.pen { fill: none; stroke: var(--accent); stroke-width: 2; }
+.pen-down { fill: var(--accent); }
+.preview-box, .contribution { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: .75rem; }
+.signature-image { display: block; width: 100%; max-width: 36rem; height: auto; color: var(--fg); background: var(--bg); border-radius: 6px; }
+.permission { border: 2px solid var(--border); border-radius: 8px; padding: .75rem 1rem; margin: 1rem 0; }
+.permission legend { font-weight: 700; padding: 0 .4rem; }
+.wording { margin-top: 0; }
+.choice { display: grid; grid-template-columns: auto 1fr; gap: .1rem .6rem; align-items: start; margin: .5rem 0; }
+.choice input { width: 1.5rem; height: 1.5rem; min-height: 0; margin-top: .2rem; }
+.choice label { font-weight: 600; }
+.choice .hint { grid-column: 2; margin: 0; }
+.modules { border: 2px solid var(--border); border-radius: 8px; padding: .75rem 1rem; margin: 1rem 0; }
+.modules legend { font-weight: 700; padding: 0 .4rem; }
+.presets { display: grid; gap: .75rem; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); }
+.planned { padding-left: 1.2rem; }
+.contributions { list-style: none; padding: 0; display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); }
+.contribution h2 { margin: 0 0 .5rem; font-size: 1.15rem; }
+.hint-box { margin-top: 1.5rem; }
+select { width: 100%; font: inherit; color: var(--fg); background: var(--bg); border: 2px solid var(--border); border-radius: 6px; padding: .6rem; min-height: 44px; }

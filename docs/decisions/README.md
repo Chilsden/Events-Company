@@ -42,5 +42,7 @@ Material product, architecture, commercial and process decisions are recorded he
 | [0020](0020-mvp-implementation-stack.md) | Development stack for the first working slice (recommendation) | accepted for the first local slice (gate passed 2026-10-31); not a production decision |
 | [0021](0021-checkin-first-slice-guest-and-check-in-model.md) | Guest and check-in data model for the first Check-in Studio slice | proposed (implemented locally on synthetic data; needs privacy validation); immutable-time rule amended by 0022 |
 | [0022](0022-checkin-guest-management-undo-audit-import.md) | Guest management: CSV import, name edits, recorded undo, audit history | proposed (implemented locally on synthetic data; needs privacy validation) |
+| [0023](0023-mosaic-rename-and-check-in-studio-collection.md) | Mosaic (formerly Signature Mosaic); Check-in Studio is the collection interface | accepted (founder, 2026-10-31); ShareWall boundary question open |
+| [0024](0024-configurable-check-in-inputs-and-shared-contributions.md) | Configurable Check-in Studio inputs and the shared contribution model | proposed (implemented locally on synthetic data; needs privacy validation) |
 
 Open decisions that are not yet records are listed in section 16 of [../MVP-MASTER-SPEC.md](../MVP-MASTER-SPEC.md).

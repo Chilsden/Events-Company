@@ -1,4 +1,4 @@
-# Manual browser test checklist (Check-in Studio guest management)
+# Manual browser test checklist (Check-in Studio: guest management and configurable inputs)
 
 No browser automation was run for this slice. The automated tests and the smoke script check the server, the HTML and the database; they do **not** show how the pages look or behave in a real browser, with a keyboard, on a phone, or with a screen reader. Please do this once and note anything odd. Use synthetic names only.
 
@@ -41,6 +41,32 @@ Setup: `cd web`, `npm install`, `npm run reset-data` (optional, for a clean star
 22. The server only listens on this computer, so a real phone cannot reach it. Use the browser's device toolbar instead (F12, then the phone icon) and try widths 360, 768 and 1024 pixels.
 23. At 360 px: no sideways scrolling on the main pages (the audit table may scroll sideways inside its own box, which is expected); the three attendance numbers stack; buttons are at least as tall as your thumb; text is readable without zooming; the pinned message does not hide the guest you just used.
 24. Turn on dark mode in your operating system. Text, buttons and the date picker should remain readable.
+
+## Configurable inputs and signature collection (new)
+
+Use a second event for this part ("Signature Test Event"), plus the first one to check nothing changed there.
+
+25. On the new event press **Choose inputs**. Expect: the guest list and attendance ticked, signature capture not ticked, and a list headed "Planned, not available yet" with drawing, photograph, video, text messages and consent shown as plain text with **no** tick boxes.
+26. Press **Signatures only**. Expect a confirmation and only "Signature capture" ticked. Open **Check-in Studio** for the event: it should say the guest list is switched off and show no add-guest form, no import button and no attendance totals.
+27. Go back to the first event's inputs: it must still have the guest list and attendance ticked (one event's setting must not change another's), and its guest list, check-in and undo must still work.
+28. On the signatures-only event press **Open collection screen**. Expect a box to draw in, instructions, buttons Undo last stroke / Clear / Preview signature (the first two greyed out until you draw), and **no** name, email, phone, guest or RSVP fields anywhere.
+29. **Mouse:** draw a signature with the mouse. Check it follows the pointer smoothly, a stroke ends when you let go, and drawing outside the box edge does not break anything.
+30. **Touchscreen** (a laptop or tablet with touch, if you have one; otherwise note "not tested"): draw with a finger. The page must not scroll or zoom while drawing in the box. Try two fingers; nothing should break. Rotate a tablet if possible.
+31. Press **Undo last stroke**: only the last stroke disappears. Press **Clear**: everything disappears. Draw a tiny dot and press **Preview signature**: you should be told it is too small.
+32. Draw a proper signature and press **Preview signature**. Expect the picture, the display-permission wording ("Demonstration only ... not real consent"), two choices with **neither selected**, and Back to drawing / Submit signature. Press **Back to drawing**: your drawing is still there.
+33. Press **Preview signature** then **Submit signature** *without* choosing: expect a clear message that you must choose, and your signature still on screen. Choose **Yes** and submit: expect a confirmation and a fresh empty box. Submit a second one choosing **No**. You were never asked for a name.
+33a. (Optional, needs the guest list and signatures both on in the first event's inputs.) In the first event's Check-in Studio press **Take a signature** on one guest. The collection screen should say "This signature will be linked to <that guest>" and show no other guest names and no drop-down. Submit one, then check Collected signatures says "Linked to a guest: Yes" without showing the name.
+34. Open **Collected signatures**. Expect two pictures, times, "No (anonymous)", one "Display permission given" and one "Display permission not given", and "Eligible for display by other products ... 1 of 2".
+35. Press **Withdraw display permission** on the first. Expect a confirmation, the picture still shown, status "withdrawn", and "... 0 of 2". There should be no way to delete or edit a signature.
+36. Open **View audit history** for the event: it should list the inputs being switched, the two submissions and the withdrawal, with no names.
+37. On **Choose inputs** untick signature capture and save. The collected signatures should still be listed. Open the collection screen: it should say nothing is switched on. Switch it back on.
+38. Restart the server (Ctrl+C, `npm run dev`). The input settings, both signatures and the withdrawal should all be there.
+
+### Keyboard and assistive technology (signature screen)
+39. Tab to the drawing area (a labelled "Signature drawing area"): it should show a clear focus outline. Press **Space** (message "Pen down"), press arrow keys to draw (Shift for bigger steps), press **Space** again ("Pen up"). Preview and submit using only the keyboard. Check the radio buttons and every button can be reached and used.
+40. With a screen reader (NVDA with Chrome or Edge is free): is the drawing area announced with its instructions? Are "Pen down", "Pen up", "Last stroke removed" and "Signature cleared" announced? Is the "choose one" requirement on the permission group announced? Note honestly what works and what does not; the drawing box is expected to be hard to use with a screen reader alone, and there is no other way to sign in this prototype.
+41. Narrow widths (360, 768, 1024 px in the browser's device toolbar): the drawing box should fill the width at roughly the same shape, buttons stay large enough to tap, the three quick-choice buttons stack, and the collected-signatures cards fit without sideways scrolling.
+42. Dark mode: the box, the pen, the strokes and the permission box must be readable.
 
 ## Record
 Note for each numbered step: pass or what happened, with the browser and version. Report anything that failed to the Lead Orchestrator. Passing this checklist does not make the prototype secure; there is still no sign-in.

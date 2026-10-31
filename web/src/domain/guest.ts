@@ -65,6 +65,11 @@ export function formatCheckInTime(iso: string): string {
 }
 
 export const NOTICES = [
+  "module-disabled",
+  "modules-saved",
+  "contribution-saved",
+  "permission-revoked",
+  "permission-not-granted",
   "added",
   "checked-in",
   "already",
@@ -79,7 +84,17 @@ export const NOTICES = [
 ] as const;
 export type Notice = (typeof NOTICES)[number];
 
-export type AuditAction = "guest_added" | "guests_imported" | "guest_renamed" | "checked_in" | "check_in_undone" | "checked_in_again";
+export type AuditAction =
+  | "guest_added"
+  | "guests_imported"
+  | "guest_renamed"
+  | "checked_in"
+  | "check_in_undone"
+  | "checked_in_again"
+  | "module_enabled"
+  | "module_disabled"
+  | "contribution_submitted"
+  | "display_permission_revoked";
 
 export interface AuditEntry {
   seq: number;
@@ -87,6 +102,8 @@ export interface AuditEntry {
   guestId: string | null;
   guestName: string | null; // the guest's CURRENT name, looked up for display; the audit record itself holds no names
   count: number | null;
+  module: string | null; // for module_enabled and module_disabled
+  contributionId: string | null; // for contribution_submitted and display_permission_revoked
   actor: string;
   occurredAt: string;
 }

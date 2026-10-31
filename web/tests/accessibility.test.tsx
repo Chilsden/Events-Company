@@ -115,6 +115,15 @@ describe("basic accessibility (axe-core on server-rendered markup)", () => {
       expect(document.body.textContent).toContain("Not yet checked in");
     });
 
+    it("rows offer 'Take a signature' only when signature capture is on, linking the collection screen to that guest", () => {
+      document.body.innerHTML = renderToStaticMarkup(list(guests));
+      expect([...document.querySelectorAll("a")].some((a) => /Take a signature/.test(a.textContent ?? ""))).toBe(false);
+      document.body.innerHTML = renderToStaticMarkup(<GuestList guests={guests} eventId={eventId} search="" checkInAction={submit} undoAction={submit} signatureEnabled />);
+      const links = [...document.querySelectorAll("a")].filter((a) => /Take a signature/.test(a.textContent ?? ""));
+      expect(links.map((a) => a.textContent)).toEqual(["Take a signature for Alex Example", "Take a signature for Bea Example"]);
+      expect(links[0].getAttribute("href")).toBe(`/events/${eventId}/check-in/collect?guest=aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa`);
+    });
+
     it("status is conveyed by text, not colour alone", () => {
       document.body.innerHTML = renderToStaticMarkup(list(guests));
       for (const li of document.querySelectorAll("li.guest")) expect(li.textContent).toMatch(/checked in/i);
@@ -147,9 +156,9 @@ describe("basic accessibility (axe-core on server-rendered markup)", () => {
     const eventId = "22222222-2222-4222-8222-222222222222";
     const guestId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
     const entries: AuditEntry[] = [
-      { seq: 3, action: "check_in_undone", guestId, guestName: "Alex Example", count: null, actor: "Local demonstration operator (not a verified person)", occurredAt: "2027-06-18T13:05:00.000Z" },
-      { seq: 2, action: "guests_imported", guestId: null, guestName: null, count: 10, actor: "Local demonstration operator (not a verified person)", occurredAt: "2027-06-18T12:00:00.000Z" },
-      { seq: 1, action: "guest_added", guestId, guestName: "Alex Example", count: null, actor: "Local demonstration operator (not a verified person)", occurredAt: "2027-06-18T11:00:00.000Z" },
+      { seq: 3, action: "check_in_undone", guestId, guestName: "Alex Example", count: null, module: null, contributionId: null, actor: "Local demonstration operator (not a verified person)", occurredAt: "2027-06-18T13:05:00.000Z" },
+      { seq: 2, action: "guests_imported", guestId: null, guestName: null, count: 10, module: null, contributionId: null, actor: "Local demonstration operator (not a verified person)", occurredAt: "2027-06-18T12:00:00.000Z" },
+      { seq: 1, action: "guest_added", guestId, guestName: "Alex Example", count: null, module: null, contributionId: null, actor: "Local demonstration operator (not a verified person)", occurredAt: "2027-06-18T11:00:00.000Z" },
     ];
     const preview = async () => ({});
     const preview1 = { submissionId: "55555555-5555-4555-8555-555555555555", names: ["A Example", "B Example"], invalid: [{ row: 3, reason: "Enter the guest's name." }], duplicatesInFile: 2, matchExisting: 1 };

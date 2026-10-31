@@ -37,7 +37,7 @@ No benchmarks, prices or vendor limits have been measured or verified for this d
 | Media | Upload sessions, assets, derivatives, retention |
 | Real-time | Display and control channels |
 | Check-in Studio | Stations, check-in events, forms, QR entry |
-| Signature Mosaic | Compositions, animation settings, reveal state |
+| Mosaic | Compositions, animation settings, reveal state |
 | ShareWall | Submissions, moderation queue, display rules, collaborative photo and video grids |
 | Lucky Draw | Pools, rounds, selections, evidence |
 | Event Gallery | Post-event galleries, ingestion (proposed routes: organiser upload, photographer link, grant import), curation and eligibility checks, selections, links, downloads (separate from ShareWall; reads other products' content only through content grants) |
@@ -113,7 +113,7 @@ Proposed outline, not a schema. All tenant-scoped rows carry `account_id`; event
 
 ## 7. Real-time communication
 
-Needed for: multi-device check-in status, live Signature Mosaic and ShareWall displays, Lucky Draw control and display, and moderation.
+Needed for: multi-device check-in status, live Mosaic and ShareWall displays, Lucky Draw control and display, and moderation.
 
 | Option | For | Against |
 |---|---|---|
@@ -179,7 +179,7 @@ Decision [0004](../decisions/0004-shared-keyboard-shortcuts.md).
 - Products share event, guest, media, consent and audit services.
 - A product reads another product's data only through a **permission grant**: source product, target product, purpose, scope, who enabled it, time, revoked or not. Example: Check-in Studio photos reach ShareWall only if guest consent covers it and the organiser enables it.
 - The grant check is in the shared data-access layer, so no product bypasses it.
-- Signature Mosaic and ShareWall may share a rendering library. They remain separate products with separate configuration. **Confirmed boundary (C-4):** ShareWall owns collaborative photo and video grids; Signature Mosaic handles signatures and drawings forming designs.
+- Mosaic and ShareWall may share a rendering library. They remain separate products with separate configuration. **Confirmed boundary (C-4):** ShareWall owns collaborative photo and video grids; Mosaic handles signatures and drawings forming designs.
 - **Event Gallery ([0008](../decisions/0008-event-gallery-post-event-product.md)) is a distinct post-event product.** It gathers content from Check-in Studio, ShareWall, organiser uploads, guest QR submissions and photographer uploads. For content that originates in another product it relies on a `ContentGrant` that is explicit, recorded and revocable.
 - **Eligibility is evaluated when content is shown, not only when it is added.** An item is shown only if: a valid grant exists (when it came from another product); consent covers the use; moderation status is approved; retention has not expired; and it has not been deleted. Each grant and revocation is audited.
 - **Revocation is more than hiding a page.** What a revocation does to signed links, caches, exports, offline devices and backups, and the exposure window for each, is in section 24. Copies already downloaded cannot be recalled; people are told this where they download, share or print.

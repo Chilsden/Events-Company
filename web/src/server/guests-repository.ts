@@ -13,6 +13,7 @@ import {
   type RenameResult,
   type UndoResult,
 } from "@/domain/guest";
+import { requireModule } from "@/server/modules-repository";
 import { asAccount } from "@/server/scope";
 
 type Row = {
@@ -74,6 +75,7 @@ export async function addGuest(db: PGlite, accountId: string, eventId: string, n
   return asAccount(db, accountId, async (tx) => {
     const found = await tx.query("select 1 from events where id = $1 and account_id = $2", [eventId, accountId]);
     if (found.rows.length === 0) return null;
+    await requireModule(tx, accountId, eventId, "guest_registration");
     await lockEventGuests(tx, eventId);
     if ((await guestCount(tx, accountId, eventId)) >= MAX_GUESTS_PER_EVENT) throw new GuestLimitError(MAX_GUESTS_PER_EVENT);
     const { rows } = await tx.query<Row>(
@@ -129,6 +131,7 @@ export async function getAttendance(db: PGlite, accountId: string, eventId: stri
 export async function checkInGuest(db: PGlite, accountId: string, eventId: string, guestId: string): Promise<CheckInResult> {
   if (!isUuid(eventId) || !isUuid(guestId)) return { status: "not_found" };
   return asAccount(db, accountId, async (tx): Promise<CheckInResult> => {
+    await requireModule(tx, accountId, eventId, "attendance");
     const ids = [accountId, eventId, guestId];
     const first = await tx.query<Row>(
       `update guests set checked_in_at = clock_timestamp()
@@ -156,6 +159,7 @@ export async function checkInGuest(db: PGlite, accountId: string, eventId: strin
 export async function undoCheckIn(db: PGlite, accountId: string, eventId: string, guestId: string): Promise<UndoResult> {
   if (!isUuid(eventId) || !isUuid(guestId)) return { status: "not_found" };
   return asAccount(db, accountId, async (tx): Promise<UndoResult> => {
+    await requireModule(tx, accountId, eventId, "attendance");
     const ids = [accountId, eventId, guestId];
     const changed = await tx.query<Row>(
       `update guests set checked_in_at = null
@@ -176,6 +180,7 @@ export async function undoCheckIn(db: PGlite, accountId: string, eventId: string
 export async function renameGuest(db: PGlite, accountId: string, eventId: string, guestId: string, name: string): Promise<RenameResult> {
   if (!isUuid(eventId) || !isUuid(guestId)) return { status: "not_found" };
   return asAccount(db, accountId, async (tx): Promise<RenameResult> => {
+    await requireModule(tx, accountId, eventId, "guest_registration");
     const ids = [accountId, eventId, guestId];
     const changed = await tx.query<Row>(
       `update guests set name = $4
@@ -200,6 +205,7 @@ export async function renameGuest(db: PGlite, accountId: string, eventId: string
 export async function importGuests(db: PGlite, accountId: string, eventId: string, batchId: string, names: string[]): Promise<ImportResult> {
   if (!isUuid(eventId) || !isUuid(batchId) || names.length === 0 || names.length > 500) return { status: "event_not_found" };
   return asAccount(db, accountId, async (tx): Promise<ImportResult> => {
+    await requireModule(tx, accountId, eventId, "guest_registration");
     const inserted = await tx.query(
       `insert into import_batches (account_id, id, event_id, guest_count)
        select $1, $2, $3, $4 where exists (select 1 from events where id = $3 and account_id = $1)
@@ -238,11 +244,12 @@ export async function listAudit(db: PGlite, accountId: string, eventId: string, 
       action: AuditAction;
       guest_id: string | null;
       guest_name: string | null;
-      detail: { count?: number };
+      detail: { count?: number; module?: string };
+      contribution_id: string | null;
       actor: string;
       occurred_at: Date | string;
     }>(
-      `select n.ordinal as seq, n.action, n.guest_id, g.name as guest_name, n.detail, n.actor, n.occurred_at
+      `select n.ordinal as seq, n.action, n.guest_id, g.name as guest_name, n.detail, n.contribution_id, n.actor, n.occurred_at
        from (
          select a.*, row_number() over (order by a.seq) as ordinal
          from audit_events a where a.account_id = $1 and a.event_id = $2
@@ -259,6 +266,8 @@ export async function listAudit(db: PGlite, accountId: string, eventId: string, 
         guestId: r.guest_id,
         guestName: r.guest_name,
         count: typeof r.detail?.count === "number" ? r.detail.count : null,
+        module: typeof r.detail?.module === "string" ? r.detail.module : null,
+        contributionId: r.contribution_id,
         actor: r.actor === "local_demo_operator" ? OPERATOR_LABEL : "Unknown",
         occurredAt: new Date(r.occurred_at).toISOString(),
       })),

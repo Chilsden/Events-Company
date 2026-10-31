@@ -13,12 +13,12 @@ The Events Company is building a UK-first digital event platform for individuals
 Five MVP products share one platform:
 
 1. Check-in Studio
-2. Signature Mosaic
+2. Mosaic
 3. ShareWall
 4. Lucky Draw
 5. Event Gallery
 
-All five stay in scope. Sequencing (section 14) orders the work; it does not remove a product. Signature Mosaic, ShareWall and Event Gallery are three distinct products, even where they share rendering or media infrastructure.
+All five stay in scope. Sequencing (section 14) orders the work; it does not remove a product. Mosaic, ShareWall and Event Gallery are three distinct products, even where they share rendering or media infrastructure.
 
 The MVP has two workstreams: the customer-facing platform (sections 4 and 5) and the internal AI agent workforce that helps build and run the business (section 6.10). The workforce is not a post-MVP extra.
 
@@ -61,12 +61,12 @@ Every claim in this and linked documents is one of:
 - All five products should have some offline capability, subject to documented limitations and technical feasibility ([0007](decisions/0007-offline-capability.md)). This replaces the earlier "no offline in the initial release" position. Connectivity warnings and event-readiness checks stay. Per-product scope is not yet decided.
 - Documentation first; native Claude Code capabilities; no orchestration framework ([0001](decisions/0001-documentation-first-and-native-claude-code.md)).
 - The founder approves scope, spend, deployment, merges to `main` and privacy-sensitive changes (section 6).
-- The five-product portfolio, with Signature Mosaic, ShareWall and Event Gallery distinct ([0002](decisions/0002-five-product-portfolio.md)).
+- The five-product portfolio, with Mosaic, ShareWall and Event Gallery distinct ([0002](decisions/0002-five-product-portfolio.md)).
 - The agent workforce is part of the MVP, uses the six roles in `CLAUDE.md`, and runs on native Claude Code capabilities ([0003](decisions/0003-agent-workforce-mvp-workstream.md)).
 - Keyboard shortcuts are a shared platform capability ([0004](decisions/0004-shared-keyboard-shortcuts.md)).
 - Instagram hashtag retrieval is optional and never a launch dependency ([0005](decisions/0005-instagram-integration-assumptions.md)).
 - Event Gallery is a distinct, primarily post-event product that gathers eligible content from other sources under explicit, recorded and revocable permissions ([0008](decisions/0008-event-gallery-post-event-product.md)).
-- ShareWall owns collaborative photo and video grids. Signature Mosaic focuses on signatures and drawings forming designs ([0002](decisions/0002-five-product-portfolio.md)).
+- ShareWall owns collaborative photo and video grids. Mosaic (formerly Signature Mosaic) arranges permitted contributions captured by Check-in Studio into compositions such as shapes and logos ([0002](decisions/0002-five-product-portfolio.md), renamed and widened by [0023](decisions/0023-mosaic-rename-and-check-in-studio-collection.md)).
 - Pricing tiers, subscriptions, payment processing, checkout and paid feature restrictions are deferred until after the MVP ([0010](decisions/0010-defer-monetisation-until-after-mvp.md)).
 - Account owners and event collaborators are distinct roles. The account owner controls account-level actions (account ownership, billing, account deletion, ownership transfer) and permanent event deletion, with confirmation and audit. Event collaborators manage ordinary event operations, including archiving ([0011](decisions/0011-owner-only-account-actions.md)).
 - English (UK) is the fully supported launch language; internationalisation supports progressive localisation ([0012](decisions/0012-english-uk-launch-language-progressive-localisation.md)).
@@ -112,9 +112,13 @@ Check-in Studio should have some offline capability, subject to documented limit
 
 Accessibility criteria for this product are in section 5.11.
 
+**Configurable inputs (decision [0023](decisions/0023-mosaic-rename-and-check-in-studio-collection.md), 2026-10-31):** Check-in Studio is a modular, configurable event input platform. Each event has its own on/off setting for: guest details and registration; RSVP and attendance check-in; signature capture; drawing capture; photograph capture or upload; short video recording or upload; text messages; purpose-specific consent. An event can be set to collect **signatures only**, with no guest names, registration, RSVP or attendance. Contributions can exist without a guest record. Check-in Studio is the exclusive collection interface for contributions consumed by Mosaic and, through permissions, Event Gallery. Built so far: guest registration, attendance and signature capture; the rest are planned.
+
 To resolve: which capture types the free entry point includes; consent wording and withdrawal flow; which offline capabilities Check-in Studio gets and the behaviour when connectivity drops mid-event (spikes S-01, S-02).
 
-### 4.2 Signature Mosaic
+### 4.2 Mosaic
+
+> **Renamed and widened (decision [0023](decisions/0023-mosaic-rename-and-check-in-studio-collection.md), 2026-10-31).** The product formerly called Signature Mosaic is now **Mosaic**. It arranges permitted contributions (signatures, drawings, photographs and short video clips) into visual compositions such as shapes and logos. **Check-in Studio is the only interface that collects those contributions; Mosaic has no capture interface of its own.** Mosaic reads contributions only through the shared eligibility interface (a contribution must have display permission for the purpose, not withdrawn). Where this section below still says "signatures and drawings", read "contributions" for the widened scope; the detailed requirements have not yet been re-written and photographs and video are subject to spike S-05.
 
 - Guest signatures assembled into configured shapes, logos or silhouettes.
 - Live mode and reveal mode.
@@ -127,26 +131,26 @@ To resolve: which capture types the free entry point includes; consent wording a
 - Signatures and drawings assembling into a logo, number, shape or custom design; custom logo and shape uploads.
 - Animation speed controls; music upload including MP3 (rights check needed).
 - Live contribution mode, animated build-up mode and organiser-triggered reveal mode.
-- Multiple Signature Mosaic experiences and multiple displays per event.
+- Multiple Mosaic experiences and multiple displays per event.
 - Original content and processed derivatives are both preserved.
 - Examples given in discovery: glowing red/orange signatures forming the number 10; white signatures forming a Christmas tree.
 - Offline: some offline capability, subject to limits and feasibility (section 5.7).
 
-**Boundary with ShareWall (decided 2026-10-30):** Signature Mosaic focuses on signatures and drawings forming designs. Collaborative photo and video grids, including the "portrait images as a large-screen grid" example from discovery, belong to ShareWall (4.3). Both may use the same rendering library; they stay separate products.
+**Boundary with ShareWall (decided 2026-10-30; needs the founder's confirmation after the rename):** the 2026-10-30 decision gave Mosaic signatures and drawings forming designs and gave collaborative photo and video grids, including the "portrait images as a large-screen grid" example from discovery, to ShareWall (4.3). Mosaic now also accepts photographs and short video clips as contributions, so the line between a Mosaic composition (a shape or logo made of contributions) and a ShareWall grid (a wall of contributions) must be restated. **Open question O-23-1 in decision 0023.** Both may use the same rendering library; they stay separate products.
 
 Video and media transformations are subject to a feasibility spike (S-05) and are not guaranteed MVP functionality.
 
-**Sources (proposed):** signatures captured in Check-in Studio, and signature submissions from ShareWall only through a content grant. ShareWall keeps its own signature submissions; they feed Signature Mosaic only with a grant. Whether Signature Mosaic has its own contribution link is open.
+**Sources:** contributions captured in Check-in Studio (decided, 0023), and signature submissions from ShareWall only through a content grant (proposed). ShareWall keeps its own signature submissions; they feed Mosaic only with a grant. Whether Mosaic has its own contribution link is open.
 
 Offline: proposed minimum is display and reveal from content cached before the event, with a pre-rendered export as the fallback (section 5.7). Accessibility criteria are in section 5.11.
 
-To resolve: whether Signature Mosaic has its own contribution link; minimum signature count for a good result; export formats and resolution.
+To resolve: minimum contribution count for a good result; export formats and resolution. ("Whether Mosaic has its own contribution link" is answered by 0023: no, Check-in Studio collects.)
 
 ### 4.3 ShareWall
 
 - Collaborative event mosaic assembled from guest contributions.
 - Compositions that form shapes or logos.
-- Reuses composition and rendering infrastructure from Signature Mosaic, while remaining a distinct product experience.
+- Reuses composition and rendering infrastructure from Mosaic, while remaining a distinct product experience.
 
 **Phase 0 additions (P0):**
 
@@ -307,7 +311,7 @@ Proposed defaults, to validate during design and **not decided**:
 
 | Product | Keys |
 |---|---|
-| Signature Mosaic | `Space` pause/resume animation; `R` reveal (organiser-triggered); `Esc` exit reveal or return to display |
+| Mosaic | `Space` pause/resume animation; `R` reveal (organiser-triggered); `Esc` exit reveal or return to display |
 | Lucky Draw | `Space` start draw; `N` next round; `P` review the previous round (read-only); `Shift+R` reset current round; `Shift+X` mark winner absent; `Shift+D` re-draw; `Esc` back to the display without ending the session |
 | ShareWall | `Space` pause/resume presentation |
 | Check-in Studio, Event Gallery | None supplied; to decide |
@@ -330,7 +334,7 @@ Proposed defaults, to validate during design and **not decided**:
 | Product | Minimum offline capability | Limits | Fallback if the minimum proves infeasible |
 |---|---|---|---|
 | Check-in Studio | A pre-event station pack of the event's guest list on authorised devices; check-in by name search or QR; walk-ins; queued sync | The pack must be loaded while online. Guest edits other than walk-ins need a connection. Photo, video and signature capture queue only if device storage allows, otherwise they are disabled offline with a visible notice | Printable guest list or CSV for manual check-in, entered later |
-| Signature Mosaic | Display and reveal from content cached before the event; reveal runs locally on the display device | New contributions and multi-device sync need a connection | Pre-rendered export of the composition played locally |
+| Mosaic | Display and reveal from content cached before the event; reveal runs locally on the display device | New contributions and multi-device sync need a connection | Pre-rendered export of the composition played locally |
 | ShareWall | The display loops approved content cached before the event; guest uploads retry from the guest's device on reconnect where the browser allows | Moderation, new approvals and live updates need a connection. Queued guest uploads are not guaranteed | Exported slideshow of approved content |
 | Lucky Draw | Pre-loaded configuration and pool; the console presents results already drawn; offline check-ins queue | Drawing needs a connection because execution is server-side (4.4) | Open: a labelled manual fallback is not proposed for the MVP (see 16) |
 | Event Gallery | The gallery shell and items already opened are cached | Browsing new items, downloads and permission checks need a connection | Organiser-prepared export before the event, subject to the revocation limits in 11.2 |
@@ -405,7 +409,7 @@ Public displays are not interactive, but the contrast, flashing and legibility r
 | Product | Criteria |
 |---|---|
 | Check-in Studio | Guest search, QR entry, walk-in form and check-in confirmation work with keyboard and screen reader. Success and failure are announced and not shown by colour alone. Targets are large enough for tablet use. Signature capture offers an alternative to drawing, if Phil confirms (open) |
-| Signature Mosaic | The control panel is fully keyboard operable. The reveal has a reduced-motion alternative and respects the flash limit. The signature capture alternative above applies |
+| Mosaic | The control panel is fully keyboard operable. The reveal has a reduced-motion alternative and respects the flash limit. The signature capture alternative above applies |
 | ShareWall | The submission form is accessible and has an alternative-text field. The moderation queue is keyboard operable and announces status changes. Displays meet the contrast and flash rules |
 | Lucky Draw | Operator controls work from the keyboard and from on-screen buttons. A drawn winner is announced as text through a live region on the console. The reveal has a reduced-motion alternative and respects the flash limit. Confirmation dialogs are keyboard accessible |
 | Event Gallery | The grid is keyboard navigable. Selection and download work from the keyboard. Alternative text is shown where supplied. Focus is managed after every action. Link and error pages are accessible |
@@ -687,7 +691,7 @@ If fundraising becomes a priority: build a targeted list and verify fit, stage, 
 | 4 | Validation, security and privacy review, pilot | Review findings handled; pilot results recorded |
 | 5 | Launch readiness and measured rollout | Launch criteria in section 11.1 met; founder approves release |
 
-Likely module order (**recommendation**): Check-in Studio first as the entry point and source of guests; Signature Mosaic next, since ShareWall reuses its rendering; Lucky Draw and Event Gallery depend on the guest and media foundations. Confirm in phase 0.
+Likely module order (**recommendation**): Check-in Studio first as the entry point and source of guests; Mosaic next, since ShareWall reuses its rendering; Lucky Draw and Event Gallery depend on the guest and media foundations. Confirm in phase 0.
 
 Repository scaffolding, spikes, agent development and implementation using synthetic data may proceed before legal/privacy approval (decision 0018). Real guest data and the private beta wait for the real-data gate (backlog O-09). Hiring advisers, spending money and contacting prospects need Phil's separate approval; preparation is authorised. The agent workforce (6.10) is a parallel MVP workstream from phase 0 onward. A small-scale private beta with real organisers happens in phase 4, before public launch.
 
@@ -696,7 +700,7 @@ Repository scaffolding, spikes, agent development and implementation using synth
 | Milestone | Content | Done when |
 |---|---|---|
 | 1 Development foundation | Repository scaffold; Claude Code agent capabilities; technical architecture spikes; synthetic test data; automated checks | A fresh checkout builds and passes the automated checks; the agent capability check is recorded; the stack decision and spike results are recorded |
-| 2 First end-to-end experience | Create an event; register or check in a guest; capture a signature; display Signature Mosaic; view eligible content in Event Gallery | One person can do all five steps on synthetic data, with consent and permissions enforced |
+| 2 First end-to-end experience | Create an event; register or check in a guest; capture a signature; display Mosaic; view eligible content in Event Gallery | One person can do all five steps on synthetic data, with consent and permissions enforced |
 | 3 Complete MVP and private beta | All five products; agreed offline capabilities; security and privacy controls; accessibility; operational readiness; real-event validation | The exit conditions of phases 2 to 5 and the real-data gate are met |
 
 Item-level lists for each milestone are in backlog section 1.1.
@@ -737,7 +741,7 @@ No dates are promised until scope and feasibility are understood. Each milestone
 | [docs/research/agent-activation-validation.md](research/agent-activation-validation.md) | Exists (T-044: documentation check, validation preparation, activation checks not yet run) |
 | [docs/research/credential-exposure-remediation.md](research/credential-exposure-remediation.md) | Exists (T-045: steps to rotate exposed keys and review broad user-level rules; no secret values) |
 | [docs/research/mvp-stack-gate-results.md](research/mvp-stack-gate-results.md) | Exists (stack gate GO, 2026-10-31) |
-| `web/` | Exists (working slices: events, Check-in Studio guests and check-in, CSV import, name edits, undo, audit history; local demonstration only; see `web/README.md`) |
+| `web/` | Exists (working slices: events, Check-in Studio guests and check-in, CSV import, name edits, undo, audit history, configurable inputs, signature capture and display permission; local demonstration only; see `web/README.md`) |
 | [docs/prompts/phase-0-final-corrections.md](prompts/phase-0-final-corrections.md) | Exists (instruction prompt with Phil's final decisions) |
 | `docs/requirements.md` | Not yet created; created when requirements are detailed beyond this spec |
 | `docs/market-research.md` | Not yet created; follows research |
@@ -757,7 +761,7 @@ Items below are unresolved. Where a design is proposed, the decision record is n
 4. Retention periods for every record class (architecture 25.3), media defaults, and backup retention. Free-tier expiry is post-MVP.
 5. Controller/processor model and legal review route.
 6. Lucky Draw: the random method and evidence format; whether an absent winner stays excluded from the same prize; whether a reset winner returns to the pool; whether a re-draw may refresh the snapshot ([0015](decisions/0015-lucky-draw-round-state-machine.md)).
-7. Whether Signature Mosaic has its own contribution link, and the signature source rules (4.2).
+7. Whether Mosaic has its own contribution link, and the signature source rules (4.2).
 8. Customer segments to research first (individuals, agencies, venues, corporate).
 9. Whether premium remote support, AI-assisted translation and AI moderation are in the MVP or later, and the privacy review route for each.
 10. Whether Claude Code scheduled or unattended runs are worth adopting, and under what spend limits.
@@ -788,7 +792,7 @@ C-1 to C-8 were decided by Phil on 2026-10-30. The decision is the resolution re
 | C-1 | Four products; Gallery is part of ShareWall | Five products; Event Gallery is separate | Existing position applied, per Phil's 2026-10-30 instruction ([0002](decisions/0002-five-product-portfolio.md)) | Resolved by instruction |
 | C-2 | Nine agent roles | Six roles in `CLAUDE.md` | Six applied; other functions mapped to them (6.10) | Resolved by instruction |
 | C-3 | Offline capture and queued sync across products; "latest update wins" | No offline in the initial release (section 3) | **Resolved:** all five products should have some offline capability, subject to documented limits and feasibility. The earlier position is **replaced** ([0007](decisions/0007-offline-capability.md)). Per-product scope and the "latest update wins" rule stay open until S-01 and S-02 | Resolved 2026-10-30; scope open |
-| C-4 | Photo and video grids belong to "Mosaic" | Signature Mosaic is signature-driven; ShareWall is the contribution wall | **Resolved:** ShareWall owns collaborative photo and video grids; Signature Mosaic focuses on signatures and drawings forming designs ([0002](decisions/0002-five-product-portfolio.md)) | Resolved 2026-10-30 |
+| C-4 | Photo and video grids belong to "Mosaic" | Signature Mosaic is signature-driven; ShareWall is the contribution wall | **Resolved:** ShareWall owns collaborative photo and video grids; Signature Mosaic focuses on signatures and drawings forming designs ([0002](decisions/0002-five-product-portfolio.md)) | Resolved 2026-10-30; renamed and boundary reopened by 0023 (product is now Mosaic) |
 | C-5 | Post-event Gallery sits inside ShareWall | Event Gallery has its own sources and permissions | **Resolved:** Event Gallery stays a distinct, primarily post-event product. Eligible, approved content flows into it under explicit, recorded and revocable permissions ([0008](decisions/0008-event-gallery-post-event-product.md)) | Resolved 2026-10-30; aggregation decided, ingestion routes proposed (0008); revocation effects open (0013) |
 | C-6 | Many languages "required"; English UK "initial" | Not previously specified | **Resolved:** English (UK) is the fully supported launch language; internationalisation supports progressive localisation ([0012](decisions/0012-english-uk-launch-language-progressive-localisation.md)) | Resolved 2026-10-30; later-language order open |
 | C-7 | Owner and collaborator permissions the same | Not previously specified | **Resolved:** account owners and event collaborators are distinct roles. The account owner controls account-level actions and permanent event deletion; event collaborators manage ordinary event operations ([0011](decisions/0011-owner-only-account-actions.md)) | Resolved 2026-10-30; several-owners, event creation and ownership recovery open |

@@ -9,6 +9,7 @@ import { DEMO_ACCOUNT_ID, getDatabase } from "@/server/database";
 import { getEvent } from "@/server/events-repository";
 import { addGuestAction, checkInAction, undoCheckInAction } from "@/server/guest-actions";
 import { getAttendance, listGuests } from "@/server/guests-repository";
+import { getModuleSettings } from "@/server/modules-repository";
 import { readReceipt } from "@/server/receipts";
 
 export const dynamic = "force-dynamic";
@@ -26,12 +27,13 @@ export default async function CheckInPage({ params, searchParams }: { params: Pr
   const event = await getEvent(db, DEMO_ACCOUNT_ID, id);
   if (!event) notFound();
 
+  const settings = await getModuleSettings(db, DEMO_ACCOUNT_ID, event.id);
   const search = cleanSearch(query.q);
   const receipt = readReceipt(query.r, event.id);
   const [attendance, guests, everyone] = await Promise.all([
-    getAttendance(db, DEMO_ACCOUNT_ID, event.id),
-    listGuests(db, DEMO_ACCOUNT_ID, event.id, search),
-    search ? listGuests(db, DEMO_ACCOUNT_ID, event.id) : Promise.resolve(null),
+    settings.attendance ? getAttendance(db, DEMO_ACCOUNT_ID, event.id) : Promise.resolve(null),
+    settings.guest_registration ? listGuests(db, DEMO_ACCOUNT_ID, event.id, search) : Promise.resolve([]),
+    settings.guest_registration && search ? listGuests(db, DEMO_ACCOUNT_ID, event.id) : Promise.resolve(null),
   ]);
   const highlightId = receipt?.guestId && isUuid(receipt.guestId) ? receipt.guestId : undefined;
   const named = (everyone ?? guests).find((g) => g.id === highlightId);
@@ -46,35 +48,54 @@ export default async function CheckInPage({ params, searchParams }: { params: Pr
         {event.name}, <time dateTime={event.date}>{formatEventDate(event.date)}</time>, {event.location}
       </p>
       <p className="toolbar">
-        <Link className="button button-secondary" href={`/events/${event.id}/check-in/import`}>Import guests from CSV</Link>
+        <Link className="button button-secondary" href={`/events/${event.id}/check-in/modules`}>Inputs for this event</Link>
+        {settings.signature && <Link className="button" href={`/events/${event.id}/check-in/collect`}>Open collection screen</Link>}
+        <Link className="button button-secondary" href={`/events/${event.id}/check-in/contributions`}>Collected signatures</Link>
+        {settings.guest_registration && <Link className="button button-secondary" href={`/events/${event.id}/check-in/import`}>Import guests from CSV</Link>}
         <Link className="button button-secondary" href={`/events/${event.id}/check-in/audit`}>View audit history</Link>
       </p>
 
       {receipt && <NoticeBanner notice={receipt.notice} guestName={named?.name} count={receipt.count} />}
-      <AttendanceSummary attendance={attendance} />
 
-      <section aria-labelledby="add-title">
-        <h2 id="add-title">Add a guest</h2>
-        <AddGuestForm action={addGuestAction} eventId={event.id} />
-      </section>
+      {!settings.guest_registration && (
+        <div className="notice notice-info">
+          <p>
+            The guest list is switched off for this event, so there is no registration or check-in here.{" "}
+            {settings.signature ? "Use the collection screen to take signatures." : "Choose what this event collects under Inputs."}
+          </p>
+        </div>
+      )}
 
-      <section aria-labelledby="guests-title">
-        <h2 id="guests-title">Guest list</h2>
-        <form method="get" role="search" className="search" aria-label="Find a guest">
-          <label htmlFor="q">Search by name</label>
-          <input id="q" name="q" type="search" defaultValue={search} maxLength={SEARCH_MAX} autoComplete="off" />
-          <button type="submit" className="button">Search</button>
-          {search && <Link href={`/events/${event.id}/check-in`}>Clear search</Link>}
-        </form>
-        <GuestList
-          guests={guests}
-          eventId={event.id}
-          search={search}
-          highlightId={highlightId}
-          checkInAction={checkInAction}
-          undoAction={undoCheckInAction}
-        />
-      </section>
+      {attendance && <AttendanceSummary attendance={attendance} />}
+
+      {settings.guest_registration && (
+        <>
+          <section aria-labelledby="add-title">
+            <h2 id="add-title">Add a guest</h2>
+            <AddGuestForm action={addGuestAction} eventId={event.id} />
+          </section>
+
+          <section aria-labelledby="guests-title">
+            <h2 id="guests-title">Guest list</h2>
+            <form method="get" role="search" className="search" aria-label="Find a guest">
+              <label htmlFor="q">Search by name</label>
+              <input id="q" name="q" type="search" defaultValue={search} maxLength={SEARCH_MAX} autoComplete="off" />
+              <button type="submit" className="button">Search</button>
+              {search && <Link href={`/events/${event.id}/check-in`}>Clear search</Link>}
+            </form>
+            <GuestList
+              guests={guests}
+              eventId={event.id}
+              search={search}
+              highlightId={highlightId}
+              checkInAction={checkInAction}
+              undoAction={undoCheckInAction}
+              showAttendance={settings.attendance}
+              signatureEnabled={settings.signature}
+            />
+          </section>
+        </>
+      )}
     </>
   );
 }

@@ -43,3 +43,5 @@ The founder's decision stands: all five products have some offline capability. T
 ## Evidence / sources
 
 Independent review F-04, F-11; master spec 5.7. No feasibility evidence exists yet.
+
+> **Note (2026-10-31):** "Signature Mosaic" in this record is now called **Mosaic** ([0023](0023-mosaic-rename-and-check-in-studio-collection.md)). Text left as written.

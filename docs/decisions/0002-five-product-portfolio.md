@@ -27,3 +27,5 @@ The MVP has five products, all in scope: Check-in Studio, Signature Mosaic, Shar
 ## Evidence / sources
 
 Master spec sections 1, 3 and 4; `CLAUDE.md` section 1; the conflict register (C-1).
+
+> **Note (2026-10-31):** the product named "Signature Mosaic" in this record is now called **Mosaic**, and its scope has widened to signatures, drawings, photographs and short video clips collected by Check-in Studio. See [0023](0023-mosaic-rename-and-check-in-studio-collection.md). The text above is left as written. Superseded in part by 0023 (name and scope of the product); the five-product structure is unchanged.

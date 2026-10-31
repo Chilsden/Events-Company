@@ -8,6 +8,7 @@ import { cleanSearch, MAX_GUESTS_PER_EVENT, parseGuestForm, type Notice } from "
 import { DEMO_ACCOUNT_ID, getDatabase } from "@/server/database";
 import { getEvent } from "@/server/events-repository";
 import { GuestLimitError, addGuest, checkInGuest, importGuests, listGuests, renameGuest, undoCheckIn } from "@/server/guests-repository";
+import { ModuleDisabledError, getModuleSettings } from "@/server/modules-repository";
 import { issueReceipt } from "@/server/receipts";
 
 export interface GuestFormState {
@@ -52,6 +53,7 @@ export async function addGuestAction(_previous: GuestFormState, formData: FormDa
     if (!guest) return { message: "That event could not be found.", value: parsed.name };
     guestId = guest.id;
   } catch (error) {
+    if (error instanceof ModuleDisabledError) return { message: "The guest list is switched off for this event. Switch it on under Inputs first.", value: parsed.name };
     if (error instanceof GuestLimitError) return { message: `This event already has ${MAX_GUESTS_PER_EVENT} guests, the most this prototype allows.`, value: parsed.name };
     logFailure("addGuest", error);
     return { message: "We could not add the guest. Please try again.", value: parsed.name };
@@ -70,8 +72,8 @@ export async function checkInAction(formData: FormData): Promise<void> {
     const result = await checkInGuest(await getDatabase(), DEMO_ACCOUNT_ID, eventId, guestId);
     notice = result.status === "checked_in" ? "checked-in" : result.status === "already_checked_in" ? "already" : "not-found";
   } catch (error) {
-    logFailure("checkIn", error);
-    notice = "error";
+    if (!(error instanceof ModuleDisabledError)) logFailure("checkIn", error);
+    notice = error instanceof ModuleDisabledError ? "module-disabled" : "error";
   }
   back(eventId, notice, { guestId, search });
 }
@@ -87,8 +89,8 @@ export async function undoCheckInAction(formData: FormData): Promise<void> {
     const result = await undoCheckIn(await getDatabase(), DEMO_ACCOUNT_ID, eventId, guestId);
     notice = result.status === "undone" ? "undone" : result.status === "not_checked_in" ? "not-checked-in" : "not-found";
   } catch (error) {
-    logFailure("undoCheckIn", error);
-    notice = "error";
+    if (!(error instanceof ModuleDisabledError)) logFailure("undoCheckIn", error);
+    notice = error instanceof ModuleDisabledError ? "module-disabled" : "error";
   }
   back(eventId, notice, { guestId, search });
 }
@@ -112,6 +114,7 @@ export async function renameGuestAction(_previous: RenameState, formData: FormDa
     if (result.status === "not_found") return { message: "That guest could not be found for this event. Nothing was changed.", value: parsed.name };
     notice = result.status === "renamed" ? "renamed" : "rename-unchanged";
   } catch (error) {
+    if (error instanceof ModuleDisabledError) return { message: "The guest list is switched off for this event. Nothing was changed.", value: parsed.name };
     logFailure("renameGuest", error);
     return { message: "We could not save the new name. Please try again.", value: parsed.name };
   }
@@ -130,6 +133,7 @@ export async function previewImportAction(_previous: ImportState, formData: Form
   try {
     const db = await getDatabase();
     if (!(await getEvent(db, DEMO_ACCOUNT_ID, eventId))) return { error: "That event could not be found." };
+    if (!(await getModuleSettings(db, DEMO_ACCOUNT_ID, eventId)).guest_registration) return { error: "The guest list is switched off for this event. Switch it on under Inputs first." };
     const existing = (await listGuests(db, DEMO_ACCOUNT_ID, eventId)).map((g) => g.name);
     const preview = prepareImport(new Uint8Array(await file.arrayBuffer()), existing);
     if (!preview.ok) return { error: preview.error };
@@ -175,6 +179,7 @@ export async function confirmImportAction(_previous: ImportState, formData: Form
   try {
     result = await importGuests(await getDatabase(), DEMO_ACCOUNT_ID, eventId, submissionId, names);
   } catch (error) {
+    if (error instanceof ModuleDisabledError) return { error: "The guest list is switched off for this event. Nothing was imported." };
     if (error instanceof GuestLimitError) return { error: `This would take the event over the limit of ${error.limit} guests. Nothing was imported.` };
     logFailure("confirmImport", error);
     return { error: "The import failed and nothing was imported. Please try again." };

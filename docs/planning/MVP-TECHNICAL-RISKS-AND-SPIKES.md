@@ -14,7 +14,7 @@
 | S-02 | Multi-device conflict handling | High | Blocks the check-in sync design | F-04, F-05, L-01 |
 | S-03 | Real-time displays and updates | High | Blocks the stack decision and displays | A-01, D-10 |
 | S-04 | Media upload and processing at event scale | High | Blocks the stack and storage design | A-01, E-01 to E-04 |
-| S-05 | Rendering, animation and media transformation (Signature Mosaic and ShareWall grids) | High | Blocks the shared rendering library and video scope | D-12, H-09, E-04 |
+| S-05 | Rendering, animation and media transformation (Mosaic and ShareWall grids) | High | Blocks the shared rendering library and video scope | D-12, H-09, E-04 |
 | S-06 | Lucky Draw state machine, randomness, concurrency, audit evidence | High | Blocks Lucky Draw implementation | I-02, I-05, I-10 |
 | S-07 | AI moderation | Medium | Blocks AI moderation only | H-05 |
 | S-08 | Instagram API eligibility and limits | Low | **Never blocks** the MVP (decision 0005) | H-07 |
@@ -29,7 +29,7 @@ Order (recommendation): the stack shortlist (A-08) first, then S-03, S-04, S-11,
 ## 2. Spikes
 
 ### S-01 Offline capture and sync, per product
-- **Question:** What can each of the five products capture, cache, queue and sync with no connection, on the browsers and devices organisers actually use? Start with Check-in Studio, then ShareWall submissions, cached display for Signature Mosaic, ShareWall and Event Gallery, and queued entries for Lucky Draw.
+- **Question:** What can each of the five products capture, cache, queue and sync with no connection, on the browsers and devices organisers actually use? Start with Check-in Studio, then ShareWall submissions, cached display for Mosaic, ShareWall and Event Gallery, and queued entries for Lucky Draw.
 - **Why it matters:** All five products should have some offline capability, subject to limits and feasibility (decision 0007). Venues often have poor connectivity. The cost is unmeasured.
 - **Experiment:** Prototype a browser local queue with idempotent sync against a stub server. Test on a small set of real devices and browsers, including loss of connection mid-scan, browser restart, storage limits and a long outage. Repeat the relevant parts for each product's offline behaviour. Record which functions need a connection.
 - **Expected output:** A per-product note listing what worked, what failed, the limits to show organisers and what it would cost to build, plus a recommended scope for Phil to approve (backlog L-01). It states whether each proposed minimum in spec 5.7 is feasible, a safe lease length, and what is stored on the device.
@@ -48,7 +48,7 @@ Order (recommendation): the stack shortlist (A-08) first, then S-03, S-04, S-11,
 
 ### S-03 Real-time displays and updates
 - **Question:** Which mechanism keeps several displays and control sessions in step with acceptable delay and recovery, and what does it cost to run?
-- **Why it matters:** Signature Mosaic, ShareWall and Lucky Draw all depend on live displays.
+- **Why it matters:** Mosaic, ShareWall and Lucky Draw all depend on live displays.
 - **Experiment:** Compare two or three options from the architecture (section 7) with a simple prototype: many display clients, flaky connections, reconnects, server restarts. Record latency, recovery behaviour and operating effort. Check each against the chosen hosting option.
 - **Expected output:** A recommendation with measured results and the main trade-offs.
 - **Dependencies:** Candidate options from the shortlist (A-08); S-11 for cost.
@@ -64,9 +64,9 @@ Order (recommendation): the stack shortlist (A-08) first, then S-03, S-04, S-11,
 - **Risk if unresolved:** Failed uploads at live events; runaway processing cost.
 - **Blocks implementation?** Yes: it feeds A-01 and E-01 to E-04.
 
-### S-05 Signature Mosaic animation and media transformation
-- **Question:** Can the browser render the target compositions smoothly on common display hardware, and which transformations or video effects are feasible? Signature Mosaic compositions (signatures and drawings forming numbers, shapes and logos) and ShareWall photo and video grids both use the shared rendering library, so both are tested.
-- **Why it matters:** The visual result is the product. The discovery examples (a glowing number and a tree shape for Signature Mosaic; a portrait grid for ShareWall) must not be promised before they are shown to work.
+### S-05 Mosaic animation and media transformation
+- **Question:** Can the browser render the target compositions smoothly on common display hardware, and which transformations or video effects are feasible? Mosaic compositions (signatures and drawings forming numbers, shapes and logos) and ShareWall photo and video grids both use the shared rendering library, so both are tested.
+- **Why it matters:** The visual result is the product. The discovery examples (a glowing number and a tree shape for Mosaic; a portrait grid for ShareWall) must not be promised before they are shown to work.
 - **Experiment:** Build the three discovery examples as throwaway prototypes with synthetic content. Measure frame rate and memory on a few real display machines. Try a short-video case and record what is not feasible.
 - **Expected output:** A feasibility note per example, the shared library approach, and the video scope for the MVP (ShareWall grids and capture).
 - **Dependencies:** None; can start now.

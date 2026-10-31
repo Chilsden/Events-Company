@@ -225,6 +225,136 @@ try {
   check("replaying event 1's import confirmation into event 2 imports nothing", totals(text(await page(secondStudio))) === "0/0/0");
   check("unknown events return 404 for Check-in Studio, import and audit", (await Promise.all(["check-in", "check-in/import", "check-in/audit"].map((s) => fetch(`${BASE}/events/33333333-3333-4333-8333-333333333333/${s}`)))).every((r) => r.status === 404));
 
+  // ---- configurable inputs: the original event keeps its guest list and attendance
+  const eventId = eventPath.split("/").pop();
+  const mainOf = (html) => (html.split("<main")[1] ?? "").split("</main>")[0];
+  const modulesPath = `${studioPath}/modules`;
+  const modulesPage1 = await page(modulesPath);
+  check("the original event still has the guest list and attendance switched on, signatures off", /id="module-guest_registration"[^>]*checked/.test(modulesPage1) && /id="module-attendance"[^>]*checked/.test(modulesPage1) && !/id="module-signature"[^>]*checked/.test(modulesPage1));
+  check("planned inputs are listed as text only, with no control", text(modulesPage1).includes("Planned, not available yet") && text(modulesPage1).includes("Photograph capture or upload") && !/name="module_(photograph|video|drawing|text_message|consent)"/.test(modulesPage1));
+  const sig1 = await page(`${studioPath}/collect`);
+  check("the collection screen of an event with signatures off offers nothing to collect", text(sig1).includes("No input is switched on") && !sig1.includes('data-testid="pad"'));
+
+  // ---- signature-only event
+  const sigEv = await post("/events/new", eventForm.hidden, { name: "Signature Only Event", date: "2027-08-01", location: "Gallery" });
+  const sigPath = new URL(sigEv.headers.get("location"), BASE).pathname;
+  const sigId = sigPath.split("/").pop();
+  const sigStudio = `${sigPath}/check-in`;
+  const sigModules = `${sigStudio}/modules`;
+  const sigModulesPage = await page(sigModules);
+  const sigForm = forms(sigModulesPage).find((f) => f.html.includes('name="preset"'));
+  const planned = await post(sigModules, sigForm.hidden, { module_guest_registration: "on", module_attendance: "on", module_photograph: "on" });
+  check("a tampered form cannot switch on a planned input", planned.status === 200 && text(await planned.text()).includes("planned but not built yet"));
+  const saved = await follow(await post(sigModules, sigForm.hidden, { preset: "signatures-only" }));
+  check("choosing 'Signatures only' saves, confirms and ticks only signature capture", saved.text.includes("The inputs for this event were updated") && /id="module-signature"[^>]*checked/.test(saved.html) && !/id="module-guest_registration"[^>]*checked/.test(saved.html) && !/id="module-attendance"[^>]*checked/.test(saved.html), saved.text.slice(0, 200));
+  check("the other event's configuration is unchanged by that", /id="module-guest_registration"[^>]*checked/.test(await page(modulesPath)) && !/id="module-signature"[^>]*checked/.test(await page(modulesPath)));
+
+  const sigStudioPage = await page(sigStudio);
+  const sigStudioText = text(sigStudioPage);
+  check("the Check-in Studio of a signatures-only event has no guest list, registration, import or attendance", sigStudioText.includes("guest list is switched off") && !sigStudioPage.includes('id="guest-name"') && !sigStudioText.includes("Import guests") && !sigStudioText.includes("Total guests") && sigStudioPage.includes(`${sigStudio}/collect`));
+
+  // the server refuses guest actions for the switched-off module, even when the form is replayed from another event
+  const swapTo = (hidden, id) => hidden.map((h) => (h.name === "eventId" ? { ...h, value: id } : h));
+  const addGuestForm = forms(await page(studioPath)).find((f) => f.html.includes('id="guest-name"'));
+  const refusedAdd = await post(studioPath, swapTo(addGuestForm.hidden, sigId), { name: "Should Not Exist" });
+  check("adding a guest to the signatures-only event is refused by the server", refusedAdd.status === 200 && text(await refusedAdd.text()).includes("guest list is switched off"));
+  const someGuest = guestRows(await page(studioPath))[0];
+  const refusedCheckIn = await follow(await post(studioPath, swapTo(someGuest.form.hidden, sigId), {}));
+  check("checking in through the signatures-only event is refused", refusedCheckIn.text.includes("switched off"), refusedCheckIn.text.slice(0, 150));
+  const importForm = forms(await page(`${studioPath}/import`)).find((f) => f.html.includes('type="file"'));
+  const refusedImport = await post(`${studioPath}/import`, swapTo(importForm.hidden, sigId), {}, { file: { content: "name\r\nA Example\r\n", name: "g.csv" } });
+  check("importing guests into the signatures-only event is refused", text(await refusedImport.text()).includes("switched off"));
+
+  // collection screen
+  const collectPath = `${sigStudio}/collect`;
+  const collectHtml = await page(collectPath);
+  const collectText = text(collectHtml);
+  check("the collection screen shows the drawing area and nothing about registration", collectHtml.includes('data-testid="pad"') && collectHtml.includes("Signature drawing area") && !/<input[^>]*type="(email|tel)"/.test(collectHtml) && !/name="(name|email|phone|guestId)"/.test(collectHtml) && !/RSVP|your name|register/i.test(collectText), collectText.slice(0, 300));
+  check("the collection screen states the accessibility limits honestly", collectText.includes("not been tested with a screen reader"));
+  const sigSubmitForm = forms(collectHtml).find((f) => f.html.includes('name="payload"'));
+  const STROKES = JSON.stringify({ strokes: [[[10, 10], [50, 40], [120, 20], [200, 90]], [[220, 30], [260, 80]]] });
+
+  const noChoice = await post(collectPath, sigSubmitForm.hidden, { payload: STROKES });
+  check("submitting without choosing display permission is refused: there is no default", noChoice.status === 200 && text(await noChoice.text()).includes("no default"));
+  for (const [label, payload, expected] of [
+    ["an empty signature", JSON.stringify({ strokes: [] }), "Draw a signature first"],
+    ["a dot", JSON.stringify({ strokes: [[[100, 100]]] }), "Draw a signature first"],
+    ["a payload that is not JSON", "<script>alert(1)</script>", "could not be read"],
+    ["a payload with extra markup", JSON.stringify({ strokes: [[[10, 10], [50, 40], [120, 20]]], svg: "<svg onload=alert(1)>" }), "could not be read"],
+    ["an oversized payload", "x".repeat(130000), "too large"],
+  ]) {
+    const res = await post(collectPath, sigSubmitForm.hidden, { payload, permission: "granted" });
+    const body = text(await res.text());
+    check(`${label} is refused with a clear message`, res.status === 200 && body.includes(expected) && !body.includes("alert(1)"), body.slice(0, 200));
+  }
+  const badGuest = await post(collectPath, sigSubmitForm.hidden, { payload: STROKES, permission: "granted", guestId: "44444444-4444-4444-8444-444444444444" });
+  check("linking to a guest is refused when the guest list is off", badGuest.status === 200 && /guest list is switched off|could not be found/.test(text(await badGuest.text())));
+  const none = await page(`${sigStudio}/contributions`);
+  check("nothing was saved by the refused submissions", text(none).includes("No signatures have been collected") && /Eligible for display by other products \(Mosaic, Event Gallery\): 0 of 0/.test(text(none)));
+
+  const one = await follow(await post(collectPath, sigSubmitForm.hidden, { payload: STROKES, permission: "granted" }));
+  check("an anonymous signature with explicit permission is saved and confirmed", one.text.includes("The signature was saved. You can add another.") && /\?r=[A-Za-z0-9_-]{22}/.test(one.location), one.text.slice(0, 200));
+  check("another signature can follow straight away on the same screen", one.html.includes('data-testid="pad"'));
+  const two = await follow(await post(collectPath, sigSubmitForm.hidden, { payload: STROKES, permission: "denied" }));
+  check("a signature saved with 'do not show' is stored too", two.text.includes("The signature was saved"));
+  const forgedCollect = await page(`${collectPath}?r=AAAAAAAAAAAAAAAAAAAAAA`);
+  const forgedCollect2 = await page(`${collectPath}?notice=contribution-saved`);
+  check("a forged link cannot make the collection screen claim a signature was saved", !forgedCollect.includes('class="notice') && !forgedCollect2.includes('class="notice'));
+  check("no guest record was created for the signatures", text(await page(sigStudio)).includes("guest list is switched off") && (await (await fetch(`${BASE}${sigStudio}`)).text()).indexOf("guest-") === -1);
+
+  // organiser's list and revocation
+  const contribPath = `${sigStudio}/contributions`;
+  const contribHtml = await page(contribPath);
+  const contribText = text(contribHtml);
+  check("the organiser sees both signatures, with times, anonymity and permission status", (contribHtml.match(/<svg[^>]*signature-image/g) ?? []).length === 2 && contribText.includes("No (anonymous)") && contribText.includes("Display permission given") && contribText.includes("Display permission not given") && !/<script|<image|onload/i.test(mainOf(contribHtml)), contribText.slice(0, 300));
+  check("only the signature with permission given counts as eligible for other products (1 of 2)", /Eligible for display by other products \(Mosaic, Event Gallery\): 1 of 2/.test(contribText));
+  const revokeForm = forms(contribHtml).find((f) => f.hidden.some((h) => h.name === "contributionId"));
+  check("only the permitted signature offers 'Withdraw display permission'", forms(contribHtml).filter((f) => f.hidden.some((h) => h.name === "contributionId")).length === 1);
+  const revoked = await follow(await post(contribPath, revokeForm.hidden, {}));
+  check("withdrawing permission is confirmed and the signature is kept", revoked.text.includes("Display permission was withdrawn") && (revoked.html.match(/<svg[^>]*signature-image/g) ?? []).length === 2 && revoked.text.includes("Display permission withdrawn"), revoked.text.slice(0, 250));
+  check("after withdrawal nothing is eligible for display (0 of 2)", /Eligible for display by other products \(Mosaic, Event Gallery\): 0 of 2/.test(revoked.text));
+  const again2 = await follow(await post(contribPath, revokeForm.hidden, {}));
+  check("withdrawing twice is safe", again2.text.includes("was not active for that item") && /: 0 of 2/.test(again2.text));
+
+  // isolation between events for contributions
+  const otherContrib = text(await page(`${studioPath}/contributions`));
+  check("the other event shows none of these signatures", otherContrib.includes("No signatures have been collected") && /: 0 of 0/.test(otherContrib));
+  const crossRevoke = await follow(await post(`${studioPath}/contributions`, swapTo(revokeForm.hidden, eventId), {}));
+  check("withdrawing a signature through another event is refused", crossRevoke.text.includes("could not be found"));
+  const crossSubmit = await post(`${studioPath}/collect`, swapTo(sigSubmitForm.hidden, eventId), { payload: STROKES, permission: "granted" });
+  check("submitting a signature to an event with the input switched off is refused by the server", /switched off/.test(text(await crossSubmit.text())));
+  check("unknown events return 404 for the new pages", (await Promise.all(["check-in/collect", "check-in/modules", "check-in/contributions"].map((s) => fetch(`${BASE}/events/33333333-3333-4333-8333-333333333333/${s}`)))).every((x) => x.status === 404));
+
+  // switching the input off keeps what was collected
+  const off = await follow(await post(sigModules, sigForm.hidden, { module_guest_registration: "on", module_attendance: "on" }));
+  check("switching signature capture off is confirmed and keeps earlier signatures", off.text.includes("Anything already collected has been kept") && (text(await page(contribPath)).includes("These earlier signatures have been kept")));
+  const afterOff = await post(collectPath, sigSubmitForm.hidden, { payload: STROKES, permission: "granted" });
+  check("with signatures switched off a new submission is refused", /switched off/.test(text(await afterOff.text())));
+  check("a dependency rule is enforced: attendance needs the guest list", text(await (await post(sigModules, sigForm.hidden, { module_attendance: "on" })).text()).includes("needs"));
+  await follow(await post(sigModules, sigForm.hidden, { preset: "signatures-only" }));
+  const sigAudit = text(await page(`${sigStudio}/audit`));
+  check("the audit history records the configuration changes, the signatures and the withdrawal, without any names", ["Input switched on", "Input switched off", "Signature submitted", "Display permission withdrawn"].every((s) => sigAudit.includes(s)) && !sigAudit.includes("Should Not Exist"), sigAudit.slice(0, 300));
+
+  // ---- guest list and signatures together: the collection screen never lists guests
+  await follow(await post(modulesPath, forms(await page(modulesPath)).find((f) => f.html.includes('name="preset"')).hidden, { preset: "guest-list-and-signatures" }));
+  const bothCollect = await page(`${studioPath}/collect`);
+  check("with the guest list on, the collection screen still shows no guest names and no guest picker", bothCollect.includes('data-testid="pad"') && !bothCollect.includes("<select") && !text(bothCollect).includes("Alexandra Example") && !text(bothCollect).includes("Zed Manual"));
+  const aGuest = guestRows(await page(studioPath)).find((g) => g.name === "Zed Manual");
+  check("each guest row offers 'Take a signature' for that guest", (await page(studioPath)).includes(`href="${studioPath}/collect?guest=${aGuest.id}"`));
+  const linkedCollect = await page(`${studioPath}/collect?guest=${aGuest.id}`);
+  check("opening the collection screen from a guest's row says whom it will be linked to, and only that guest", text(linkedCollect).includes("This signature will be linked to Zed Manual"), text(linkedCollect).slice(0, 300));
+  const linkedForm = forms(linkedCollect).find((f) => f.html.includes('name="payload"'));
+  check("the link carries that guest's id in the form (and no list of others)", linkedForm.hidden.some((h) => h.name === "guestId" && h.value === aGuest.id) && !linkedForm.html.includes("<select"));
+  const foreignGuestLink = await page(`${studioPath}/collect?guest=${alex.id.replace(/.$/, "0")}`);
+  check("a guest id that is not on this event links nothing", !forms(foreignGuestLink).some((f) => f.hidden.some((h) => h.name === "guestId")));
+  const linkedSave = await follow(await post(`${studioPath}/collect`, linkedForm.hidden, { payload: STROKES, permission: "granted", guestId: aGuest.id }));
+  check("a signature can be linked to a valid guest of the same event", linkedSave.text.includes("The signature was saved"));
+  const linkedList = text(await page(`${studioPath}/contributions`));
+  check("the organiser sees it as linked to a guest, still without the guest's name on the signature record", linkedList.includes("Linked to a guest Yes") && !linkedList.includes("Zed Manual"));
+  const wrongGuest = await post(`${studioPath}/collect`, linkedForm.hidden, { payload: STROKES, permission: "granted", guestId: sigId });
+  check("linking to something that is not a guest of this event is refused", wrongGuest.status === 200 && text(await wrongGuest.text()).includes("could not be found"));
+  await follow(await post(modulesPath, forms(await page(modulesPath)).find((f) => f.html.includes('name="preset"')).hidden, { preset: "guest-list" }));
+
   // ---- persistence across a restart
   const countBefore = /of (\d+) recorded events/.exec(text(await page(`${studioPath}/audit`)))?.[1];
   await stop(server);
@@ -234,6 +364,12 @@ try {
   check("guests, the renamed name, the check-ins and the totals survive a restart", t6.includes("Alexandra Example") && totals(t6) === "11/2/9", t6.slice(0, 200));
   const countAfter = /of (\d+) recorded events/.exec(text(await page(`${studioPath}/audit`)))?.[1];
   check("the audit history survives a restart unchanged", countBefore !== undefined && countAfter === countBefore, `${countBefore} vs ${countAfter}`);
+  const sigContribAfter = text(await page(contribPath));
+  check("after a restart the signature-only configuration, both signatures and the withdrawal are still there", /: 0 of 2/.test(sigContribAfter) && (await page(`${sigStudio}/modules`)).match(/id="module-signature"[^>]*checked/) !== null && !/id="module-guest_registration"[^>]*checked/.test(await page(`${sigStudio}/modules`)));
+  const freshCollect = await page(collectPath);
+  const freshSubmit = forms(freshCollect).find((f) => f.html.includes('name="payload"'));
+  const afterRestartSave = await follow(await post(collectPath, freshSubmit.hidden, { payload: STROKES, permission: "granted" }));
+  check("after a restart signatures can still be submitted and are eligible (1 of 3)", afterRestartSave.text.includes("The signature was saved") && /: 1 of 3/.test(text(await page(contribPath))));
   const reUndo = await follow(await post(studioPath, guestRows(await page(studioPath)).find((r) => r.id === alex.id).form.hidden, {}));
   check("undo still works after the restart (11/1/10)", reUndo.text.includes("check-in was undone") && totals(reUndo.text) === "11/1/10");
   check("no errors in server output", !/error|unhandled/i.test(server.output), server.output.slice(-400));

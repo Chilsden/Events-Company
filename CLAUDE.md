@@ -11,7 +11,7 @@ The Events Company is building a UK-first digital event platform for individuals
 Five MVP products, all in scope:
 
 - Check-in Studio
-- Signature Mosaic
+- Mosaic
 - ShareWall
 - Lucky Draw
 - Event Gallery

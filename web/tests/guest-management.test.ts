@@ -357,7 +357,7 @@ describe("audit history", () => {
     await importGuests(db, A, eventA1, batch(1), ["Third Unique Name"]);
     expect(JSON.stringify((await db.query("select * from audit_events")).rows)).not.toMatch(/Unique/);
     const cols = (await db.query<{ column_name: string }>("select column_name from information_schema.columns where table_name = 'audit_events'")).rows.map((r) => r.column_name).sort();
-    expect(cols).toEqual(["account_id", "action", "actor", "detail", "event_id", "guest_id", "id", "occurred_at", "seq", "tx_id"]);
+    expect(cols).toEqual(["account_id", "action", "actor", "contribution_id", "detail", "event_id", "guest_id", "id", "occurred_at", "seq", "tx_id"]);
   });
 });
 
@@ -511,14 +511,14 @@ describe("upgrading data made before the audit history existed", () => {
   it("gives existing guests and check-ins audit records so state and history agree", async () => {
     const early = path.join(root, "early");
     mkdirSync(early);
-    for (const f of readdirSync("migrations").sort().filter((n) => !n.startsWith("0004"))) copyFileSync(path.join("migrations", f), path.join(early, f));
+    for (const f of readdirSync("migrations").sort().filter((n) => n < "0004")) copyFileSync(path.join("migrations", f), path.join(early, f));
     const old = await openDatabaseAt(early);
     await ensureAccount(old, A, "Synthetic A");
     const e = await createEvent(old, A, ev("Old event"));
     await old.query("insert into guests (account_id, event_id, name) values ($1, $2, 'Old One'), ($1, $2, 'Old Two')", [A, e.id]);
     await old.query("update guests set checked_in_at = now() where name = 'Old One'");
     const applied = await migrate(old); // applies 0004 from the real folder
-    expect(applied).toEqual(["0004_guest_management.sql"]);
+    expect(applied).toEqual(["0004_guest_management.sql", "0005_modules_and_contributions.sql"]);
     const actions = (await old.query<{ action: string }>("select action from audit_events order by seq")).rows.map((r) => r.action).sort();
     expect(actions).toEqual(["checked_in", "guest_added", "guest_added"]);
     await assertConsistentOn(old, e.id);
