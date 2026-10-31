@@ -2,7 +2,7 @@
 
 Usage: python docs/proposals/agent-hardening/build_validation_env.py <empty-target-folder>
 The target must not exist or must be empty, and must be outside this repository and outside the home folder's config.
-It copies the real agent definitions (with the proposed Bash removal for security-qa and software-engineer), the proposed
+It copies the real agent definitions (security-qa and software-engineer have no Bash), the proposed
 settings plus one extra deny rule used by check A6, and the guard. It also writes hook variants for the failure tests
 into <target>/variants/ (outside .claude/), and runs `git init` with one synthetic commit (no remote).
 """
@@ -32,8 +32,9 @@ def main():
     for f in os.listdir(os.path.join(REPO, ".claude", "agents")):
         text = open(os.path.join(REPO, ".claude", "agents", f), encoding="utf-8").read()
         if f in ("security-qa.md", "software-engineer.md"):
-            text, n = re.subn(r"^(tools: .*?),? Bash\s*$", r"\1", text, count=1, flags=re.M)
-            assert n == 1, f
+            # the repository definitions no longer list Bash; fail loudly if that regresses
+            tools = re.search(r"^tools: (.*)$", text, re.M).group(1)
+            assert "Bash" not in tools, f + " still lists Bash"
         open(os.path.join(t, ".claude", "agents", f), "w", encoding="utf-8", newline="\n").write(text)
 
     s = json.load(open(os.path.join(HERE, "settings.proposed.json")))
