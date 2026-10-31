@@ -40,5 +40,6 @@ Material product, architecture, commercial and process decisions are recorded he
 | [0018](0018-discovery-and-privacy-review-first.md) | Discovery and legal/privacy review begin early; real data waits for them | accepted |
 | [0019](0019-milestone-1-development-authorised-with-synthetic-data.md) | Milestone 1 development is authorised, using synthetic data | accepted |
 | [0020](0020-mvp-implementation-stack.md) | Development stack for the first working slice (recommendation) | accepted for the first local slice (gate passed 2026-10-31); not a production decision |
+| [0021](0021-checkin-first-slice-guest-and-check-in-model.md) | Guest and check-in data model for the first Check-in Studio slice | proposed (implemented locally on synthetic data; needs privacy validation) |
 
 Open decisions that are not yet records are listed in section 16 of [../MVP-MASTER-SPEC.md](../MVP-MASTER-SPEC.md).

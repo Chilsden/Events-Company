@@ -4,6 +4,9 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import RootLayout from "@/app/layout";
 import { EventForm } from "@/components/EventForm";
+import { AddGuestForm } from "@/components/GuestForms";
+import { AttendanceSummary, GuestList, NoticeBanner } from "@/components/GuestViews";
+import type { GuestRecord } from "@/domain/guest";
 import { EventDetails, EventList, NotFoundContent } from "@/components/EventViews";
 import type { EventRecord } from "@/domain/event";
 import type { FormState } from "@/server/actions";
@@ -82,5 +85,56 @@ describe("basic accessibility (axe-core on server-rendered markup)", () => {
     expect(html).not.toContain("<script>");
     expect(html).not.toContain("<img");
     expect(html).toContain("&lt;script&gt;");
+  });
+
+  describe("Check-in Studio components", () => {
+    const eventId = "22222222-2222-4222-8222-222222222222";
+    const guests: GuestRecord[] = [
+      { id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", accountId: "11111111-1111-4111-8111-111111111111", eventId, name: "Alex Example", checkedInAt: null, createdAt: "2027-06-18T09:00:00.000Z" },
+      { id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", accountId: "11111111-1111-4111-8111-111111111111", eventId, name: "Bea Example", checkedInAt: "2027-06-18T13:05:00.000Z", createdAt: "2027-06-18T09:01:00.000Z" },
+    ];
+    const submit = async () => undefined;
+
+    it("guest list, empty list and empty search have no violations", async () => {
+      expect(await violations(renderToStaticMarkup(<GuestList guests={guests} eventId={eventId} search="" checkInAction={submit} />))).toEqual([]);
+      expect(await violations(renderToStaticMarkup(<GuestList guests={[]} eventId={eventId} search="" checkInAction={submit} />))).toEqual([]);
+      expect(await violations(renderToStaticMarkup(<GuestList guests={[]} eventId={eventId} search="zzz" checkInAction={submit} />))).toEqual([]);
+    });
+
+    it("each check-in button names the guest for screen readers, and checked-in guests have no button", () => {
+      document.body.innerHTML = renderToStaticMarkup(<GuestList guests={guests} eventId={eventId} search="" checkInAction={submit} />);
+      const buttons = [...document.querySelectorAll("button")];
+      expect(buttons.length).toBe(1);
+      expect(buttons[0].textContent).toBe("Check in Alex Example");
+      expect(document.body.textContent).toContain("Checked in at 14:05");
+      expect(document.body.textContent).toContain("Not yet checked in");
+    });
+
+    it("status is conveyed by text, not colour alone", () => {
+      document.body.innerHTML = renderToStaticMarkup(<GuestList guests={guests} eventId={eventId} search="" checkInAction={submit} />);
+      for (const li of document.querySelectorAll("li.guest")) expect(li.textContent).toMatch(/checked in/i);
+    });
+
+    it("attendance summary, notices and the add-guest form (with and without an error) have no violations", async () => {
+      expect(await violations(renderToStaticMarkup(<AttendanceSummary attendance={{ total: 3, checkedIn: 1, notCheckedIn: 2 }} />))).toEqual([]);
+      for (const n of ["added", "checked-in", "already", "not-found", "error"] as const) {
+        expect(await violations(renderToStaticMarkup(<NoticeBanner notice={n} guestName="Alex Example" />))).toEqual([]);
+      }
+      expect(await violations(renderToStaticMarkup(<AddGuestForm action={async () => ({})} eventId={eventId} />))).toEqual([]);
+      expect(await violations(renderToStaticMarkup(<AddGuestForm action={async () => ({})} eventId={eventId} initialState={{ error: "Enter the guest's name.", value: "" }} />))).toEqual([]);
+      expect(document.getElementById("guest-name")?.getAttribute("aria-describedby")).toContain("guest-name-error");
+    });
+
+    it("problem notices are announced as alerts and others as status messages", () => {
+      expect(renderToStaticMarkup(<NoticeBanner notice="error" />)).toContain('role="alert"');
+      expect(renderToStaticMarkup(<NoticeBanner notice="checked-in" guestName="Alex" />)).toContain('role="status"');
+    });
+
+    it("escapes guest names instead of treating them as markup", () => {
+      const evil = [{ ...guests[0], name: "<img src=x onerror=alert(1)>" }];
+      const html = renderToStaticMarkup(<GuestList guests={evil} eventId={eventId} search="" checkInAction={submit} />);
+      expect(html).not.toContain("<img");
+      expect(html).toContain("&lt;img");
+    });
   });
 });

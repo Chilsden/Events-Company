@@ -1,5 +1,7 @@
-import type { PGlite, Transaction } from "@electric-sql/pglite";
-import { isUuid, type EventInput, type EventRecord } from "@/domain/event";
+import type { PGlite } from "@electric-sql/pglite";
+import type { EventInput, EventRecord } from "@/domain/event";
+import { isUuid } from "@/domain/event";
+import { asAccount } from "@/server/scope";
 
 type Row = {
   id: string;
@@ -22,19 +24,6 @@ const toRecord = (r: Row): EventRecord => ({
   description: r.description,
   createdAt: new Date(r.created_at).toISOString(),
 });
-
-/**
- * Runs work as the limited `events_app` role with the account set for this transaction only, so Postgres
- * row-level security applies in addition to the explicit account filters below.
- */
-async function asAccount<T>(db: PGlite, accountId: string, work: (tx: Transaction) => Promise<T>): Promise<T> {
-  if (!isUuid(accountId)) throw new Error("accountId must be a UUID");
-  return db.transaction(async (tx) => {
-    await tx.exec("set local role events_app");
-    await tx.query("select set_config('app.account_id', $1, true)", [accountId]);
-    return work(tx);
-  });
-}
 
 export async function createEvent(db: PGlite, accountId: string, input: EventInput): Promise<EventRecord> {
   return asAccount(db, accountId, async (tx) => {

@@ -149,11 +149,11 @@ describe("persistence and migrations", () => {
     const dir = path.join(mkdtempSync(path.join(tmpdir(), "events-test-")), "pglite");
     dirs.push(path.dirname(dir));
     const first = await openDatabase(dir);
-    expect((await first.query("select version from schema_migrations")).rows).toEqual([{ version: "0001_init.sql" }]);
+    expect((await first.query("select version from schema_migrations order by version")).rows).toEqual([{ version: "0001_init.sql" }, { version: "0002_guests.sql" }, { version: "0003_protect_check_in_time.sql" }]);
     expect(await migrate(first)).toEqual([]); // second run applies nothing
     await first.close();
     const reopened = await openDatabase(dir); // reopening must not fail on the existing role and tables
-    expect((await reopened.query("select count(*)::int as c from schema_migrations")).rows[0]).toEqual({ c: 1 });
+    expect((await reopened.query("select count(*)::int as c from schema_migrations")).rows[0]).toEqual({ c: 3 });
     await reopened.close();
   });
 });

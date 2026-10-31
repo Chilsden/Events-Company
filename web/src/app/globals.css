@@ -41,3 +41,28 @@ input[aria-invalid="true"], textarea[aria-invalid="true"] { border-color: var(--
 .wrap { white-space: pre-wrap; overflow-wrap: anywhere; }
 code { overflow-wrap: anywhere; }
 @media (max-width: 40rem) { .details { grid-template-columns: 1fr; gap: .1rem; } .details dd { margin-bottom: .75rem; } }
+.visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.button-large { min-height: 56px; padding: .9rem 1.6rem; font-size: 1.1rem; }
+.summary { margin: 1.5rem 0; }
+.totals { display: grid; grid-template-columns: repeat(3, 1fr); gap: .75rem; margin: 0; }
+.totals div { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: .75rem 1rem; }
+.totals dt { font-size: .95rem; color: var(--muted); }
+.totals dd { margin: 0; font-size: 2rem; font-weight: 700; line-height: 1.2; }
+@media (max-width: 30rem) { .totals { grid-template-columns: 1fr; } }
+.notice { position: sticky; top: 0; z-index: 5; background: var(--bg); border: 2px solid var(--border); border-left-width: 8px; border-radius: 6px; padding: .75rem 1rem; margin: 1rem 0; font-weight: 600; }
+.notice-ok { border-color: #1f7a3d; }
+.notice-info { border-color: var(--accent); }
+.notice-problem { border-color: var(--error); }
+@media (prefers-color-scheme: dark) { .notice-ok { border-color: #5fd68a; } }
+.inline-form .field { max-width: 28rem; }
+.search { display: flex; flex-wrap: wrap; gap: .5rem 1rem; align-items: flex-end; margin: 0 0 1rem; }
+.search label { flex-basis: 100%; }
+.search input { flex: 1 1 14rem; width: auto; }
+.guests { list-style: none; padding: 0; margin: 0; display: grid; gap: .75rem; }
+.guest { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .75rem 1rem; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: .75rem 1rem; }
+.guest-highlight { border: 3px solid var(--accent); }
+.guest-main { display: flex; flex-direction: column; gap: .15rem; min-width: 0; }
+.guest-name { font-size: 1.2rem; font-weight: 600; overflow-wrap: anywhere; }
+.status { font-size: 1rem; }
+.status-in { font-weight: 600; }
+.guest form { margin: 0; }

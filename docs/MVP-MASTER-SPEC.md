@@ -737,7 +737,7 @@ No dates are promised until scope and feasibility are understood. Each milestone
 | [docs/research/agent-activation-validation.md](research/agent-activation-validation.md) | Exists (T-044: documentation check, validation preparation, activation checks not yet run) |
 | [docs/research/credential-exposure-remediation.md](research/credential-exposure-remediation.md) | Exists (T-045: steps to rotate exposed keys and review broad user-level rules; no secret values) |
 | [docs/research/mvp-stack-gate-results.md](research/mvp-stack-gate-results.md) | Exists (stack gate GO, 2026-10-31) |
-| `web/` | Exists (first working slice: create, list and view events; local demonstration only; see `web/README.md`) |
+| `web/` | Exists (first working slices: events, and Check-in Studio guests and check-in; local demonstration only; see `web/README.md`) |
 | [docs/prompts/phase-0-final-corrections.md](prompts/phase-0-final-corrections.md) | Exists (instruction prompt with Phil's final decisions) |
 | `docs/requirements.md` | Not yet created; created when requirements are detailed beyond this spec |
 | `docs/market-research.md` | Not yet created; follows research |
