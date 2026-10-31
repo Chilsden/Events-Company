@@ -4,17 +4,20 @@ import { notFound } from "next/navigation";
 import { AddGuestForm } from "@/components/GuestForms";
 import { AttendanceSummary, GuestList, NoticeBanner } from "@/components/GuestViews";
 import { formatEventDate, isUuid } from "@/domain/event";
-import { cleanSearch, isNotice, SEARCH_MAX } from "@/domain/guest";
+import { cleanSearch, SEARCH_MAX } from "@/domain/guest";
 import { DEMO_ACCOUNT_ID, getDatabase } from "@/server/database";
 import { getEvent } from "@/server/events-repository";
-import { addGuestAction, checkInAction } from "@/server/guest-actions";
+import { addGuestAction, checkInAction, undoCheckInAction } from "@/server/guest-actions";
 import { getAttendance, listGuests } from "@/server/guests-repository";
+import { readReceipt } from "@/server/receipts";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "Check-in Studio" };
 
 type Params = { id: string };
-type Search = { q?: string; notice?: string; g?: string };
+// Only the search text and a server-issued receipt id are read from the address. A message is shown only for a
+// receipt the server itself issued, so a link cannot make the page claim that something happened.
+type Search = { q?: string; r?: string };
 
 export default async function CheckInPage({ params, searchParams }: { params: Promise<Params>; searchParams: Promise<Search> }) {
   const { id } = await params;
@@ -24,14 +27,14 @@ export default async function CheckInPage({ params, searchParams }: { params: Pr
   if (!event) notFound();
 
   const search = cleanSearch(query.q);
+  const receipt = readReceipt(query.r, event.id);
   const [attendance, guests, everyone] = await Promise.all([
     getAttendance(db, DEMO_ACCOUNT_ID, event.id),
     listGuests(db, DEMO_ACCOUNT_ID, event.id, search),
     search ? listGuests(db, DEMO_ACCOUNT_ID, event.id) : Promise.resolve(null),
   ]);
-  const highlightId = typeof query.g === "string" && isUuid(query.g) ? query.g : undefined;
+  const highlightId = receipt?.guestId && isUuid(receipt.guestId) ? receipt.guestId : undefined;
   const named = (everyone ?? guests).find((g) => g.id === highlightId);
-  const notice = isNotice(query.notice) ? query.notice : undefined;
 
   return (
     <>
@@ -42,8 +45,12 @@ export default async function CheckInPage({ params, searchParams }: { params: Pr
       <p>
         {event.name}, <time dateTime={event.date}>{formatEventDate(event.date)}</time>, {event.location}
       </p>
+      <p className="toolbar">
+        <Link className="button button-secondary" href={`/events/${event.id}/check-in/import`}>Import guests from CSV</Link>
+        <Link className="button button-secondary" href={`/events/${event.id}/check-in/audit`}>View audit history</Link>
+      </p>
 
-      {notice && <NoticeBanner notice={notice} guestName={named?.name} />}
+      {receipt && <NoticeBanner notice={receipt.notice} guestName={named?.name} count={receipt.count} />}
       <AttendanceSummary attendance={attendance} />
 
       <section aria-labelledby="add-title">
@@ -59,7 +66,14 @@ export default async function CheckInPage({ params, searchParams }: { params: Pr
           <button type="submit" className="button">Search</button>
           {search && <Link href={`/events/${event.id}/check-in`}>Clear search</Link>}
         </form>
-        <GuestList guests={guests} eventId={event.id} search={search} highlightId={highlightId} checkInAction={checkInAction} />
+        <GuestList
+          guests={guests}
+          eventId={event.id}
+          search={search}
+          highlightId={highlightId}
+          checkInAction={checkInAction}
+          undoAction={undoCheckInAction}
+        />
       </section>
     </>
   );

@@ -66,3 +66,16 @@ code { overflow-wrap: anywhere; }
 .status { font-size: 1rem; }
 .status-in { font-weight: 600; }
 .guest form { margin: 0; }
+.button-secondary { background: transparent; color: var(--accent); border: 2px solid var(--accent); }
+.toolbar { display: flex; flex-wrap: wrap; gap: .75rem; }
+.guest { scroll-margin-top: 8rem; }
+.guest:focus { outline: 3px solid var(--accent); outline-offset: 2px; }
+.table-wrap:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.guest-actions { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+.rules { padding-left: 1.2rem; }
+.preview { margin-top: 1.5rem; }
+.preview-names { columns: 14rem; padding-left: 1.5rem; }
+.table-wrap { overflow-x: auto; }
+.audit { border-collapse: collapse; width: 100%; min-width: 36rem; }
+.audit th, .audit td { text-align: left; padding: .5rem .6rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+.audit th { background: var(--card); }

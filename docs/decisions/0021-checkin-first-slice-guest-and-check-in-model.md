@@ -2,6 +2,7 @@
 
 - Status: proposed (implemented in the local prototype under founder instruction in `docs/prompts/mvp-checkin-studio-first-slice.md`; needs privacy and technical validation before real data)
 - Date: 2026-10-31
+- Amended by [0022](0022-checkin-guest-management-undo-audit-import.md): the rule that a first check-in time can never change was replaced by an audit-record requirement so a check-in can be undone.
 - Decided by: founder asked for the slice; this model is the Solution Architect and Software Engineer's design, awaiting founder review
 
 ## Context

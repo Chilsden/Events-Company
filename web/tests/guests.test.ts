@@ -6,7 +6,7 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { cleanSearch, formatCheckInTime, parseGuestForm } from "@/domain/guest";
 import { ensureAccount, openDatabase } from "@/server/database";
 import { createEvent } from "@/server/events-repository";
-import { addGuest, checkInGuest, getAttendance, listGuests } from "@/server/guests-repository";
+import { addGuest, checkInGuest, getAttendance, listGuests, undoCheckIn } from "@/server/guests-repository";
 import { asAccount } from "@/server/scope";
 import { isUuid } from "@/domain/event";
 
@@ -260,9 +260,9 @@ describe("database constraints and access policies", () => {
     await expect(inRole(A, "insert into guests (account_id, event_id, name) values ($1, $2, 'sneaky')", [B, eventB1])).rejects.toThrow(/row-level security/);
   });
 
-  it("the application role can change only the check-in time, and cannot delete or rewrite history", async () => {
+  it("the application role can change only a guest's name and check-in state (each needs an audit record), and cannot delete or rewrite history", async () => {
     const g = (await addGuest(db, A, eventA1, "Alex"))!;
-    await expect(inRole(A, "update guests set name = 'renamed'")).rejects.toThrow(/permission denied/);
+    await expect(inRole(A, "update guests set name = 'renamed'")).rejects.toThrow(/without an audit record/); // 0004: allowed only with its audit record
     await expect(inRole(A, "update guests set account_id = $1", [B])).rejects.toThrow(/permission denied/);
     await expect(inRole(A, "update guests set event_id = $1", [eventA2])).rejects.toThrow(/permission denied/);
     await expect(inRole(A, "delete from guests")).rejects.toThrow(/permission denied/);
@@ -289,7 +289,7 @@ describe("database constraints and access policies", () => {
 
   it("the guest table holds only a name, no contact details, photographs or signatures", async () => {
     const cols = (await db.query<{ column_name: string }>("select column_name from information_schema.columns where table_name = 'guests' order by column_name")).rows.map((r) => r.column_name);
-    expect(cols).toEqual(["account_id", "checked_in_at", "created_at", "event_id", "id", "name"]);
+    expect(cols).toEqual(["account_id", "checked_in_at", "created_at", "event_id", "id", "import_batch_id", "name"]);
     const logCols = (await db.query<{ column_name: string }>("select column_name from information_schema.columns where table_name = 'check_in_log' order by column_name")).rows.map((r) => r.column_name);
     expect(logCols).not.toContain("name");
   });
@@ -320,7 +320,7 @@ describe("scoping helper, rollback and protected evidence", () => {
     expect((await checkInGuest(db, A, eventA1, g.id)).status).toBe("checked_in"); // and a retry then works normally
   });
 
-  it("the first check-in time cannot be cleared or overwritten, even by the application role or the owner", async () => {
+  it("a check-in time cannot be cleared, replaced or set without its audit record, by the application role or the owner", async () => {
     const g = (await addGuest(db, A, eventA1, "Alex Test"))!;
     const done = await checkInGuest(db, A, eventA1, g.id);
     const original = done.status === "checked_in" ? done.guest.checkedInAt : null;
@@ -328,10 +328,13 @@ describe("scoping helper, rollback and protected evidence", () => {
       asAccount(db, A, async (tx) => {
         await tx.query(sql, [g.id]);
       });
-    await expect(asApp("update guests set checked_in_at = null where id = $1")).rejects.toThrow(/cannot be changed once set/);
-    await expect(asApp("update guests set checked_in_at = now() + interval '1 hour' where id = $1")).rejects.toThrow(/cannot be changed once set/);
-    await expect(db.query("update guests set checked_in_at = null where id = $1", [g.id])).rejects.toThrow(/cannot be changed once set/);
+    await expect(asApp("update guests set checked_in_at = null where id = $1")).rejects.toThrow(/without an audit record/);
+    await expect(asApp("update guests set checked_in_at = now() + interval '1 hour' where id = $1")).rejects.toThrow(/cannot be replaced/);
+    await expect(db.query("update guests set checked_in_at = null where id = $1", [g.id])).rejects.toThrow(/without an audit record/);
     expect((await listGuests(db, A, eventA1))[0].checkedInAt).toBe(original);
+    // the supported route works: undo records its own audit event and the guest can be checked in again
+    expect((await undoCheckIn(db, A, eventA1, g.id)).status).toBe("undone");
+    expect((await checkInGuest(db, A, eventA1, g.id)).status).toBe("checked_in");
   });
 
   it("records the real time of the check-in, not the start of a long transaction", async () => {
