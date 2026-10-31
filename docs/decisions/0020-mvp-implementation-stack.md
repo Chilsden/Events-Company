@@ -1,8 +1,12 @@
-# 0020 Development stack for the first working slice (recommendation, awaiting founder approval)
+# 0020 Development stack for the first working slice (accepted for the first local slice)
 
-- Status: proposed (recommendation; not a decision)
+- Status: accepted for the first local slice (option A), gate passed 2026-10-31. Not an approval of PGlite or Next.js for production or of the full A-01 stack
 - Date: 2026-10-31
-- Decided by: pending Phil (backlog A-01; decision 0019 says the stack decision is still the founder's approval)
+- Decided by: founder (Phil) approved option A for the first local slice, conditional on the go/no-go gate, in `docs/prompts/mvp-stack-gate-and-first-slice.md`, 2026-10-31. The gate result is below
+
+## Gate outcome (2026-10-31): GO
+
+All eleven checks passed; evidence in [mvp-stack-gate-results.md](../research/mvp-stack-gate-results.md). Row-level security **was enforced** in PGlite in the tested single-connection scenario, so the 'RLS unproven' risk below is now 'observed on PGlite, still to be proved on production Postgres'. One requirement was found: PGlite must be listed in `serverExternalPackages` or the Next.js bundler breaks it. The application keeps both the repository account filter and the row-level security policies. Deviation from the slice details below: the first slice stores a calendar date only; the optional start time and time zone are deferred. Implementation: ledger T-047, code in `web/`.
 
 ## Scope of this record
 
@@ -63,7 +67,7 @@ First task after approval, with a small throwaway test: on this Windows machine 
 
 ## The first slice, once a stack is approved
 
-User journey: open the application, create an event (name, date, location, optional description), save it, see the list of events, open an event's details. UK English. Responsive. Validation messages for missing or invalid fields. No sign-in, labelled clearly on every page with a banner ("Local prototype: no sign-in, not secure, synthetic data only"). The server binds to localhost only, the account is read from server configuration and never from the request, and no request value can select another account. A fixed local demo account owns every event and every query is scoped to it, so a real account boundary can replace it later. No billing, no guest data, no later-product features.
+User journey: open the application, create an event (name, date, location, optional description), save it, see the list of events, open an event's details. UK English. Responsive. Validation messages for missing or invalid fields. No sign-in, labelled clearly on every page with a banner ("Local demonstration only — no sign-in or production security.", as specified in the gate prompt). The server binds to localhost only, the account is read from server configuration and never from the request, and no request value can select another account. A fixed local demo account owns every event and every query is scoped to it, so a real account boundary can replace it later. No billing, no guest data, no later-product features.
 
 Details to fix in the slice task: event date is a calendar date with an optional start time and time zone kept as Europe/London for now (to be confirmed); name up to 120 characters, location up to 200, description up to 2,000; identifiers are UUIDs (consistent with decision 0007's direction); an unknown or other-account event id returns a plain not-found page; all output is escaped; the pages meet the accessibility baseline in decision 0016 (labels, focus, contrast, keyboard use) and the list and details pages work on a phone width. Who may create events (decision 0011's owner and collaborator roles) is not modelled yet and is listed as deferred.
 

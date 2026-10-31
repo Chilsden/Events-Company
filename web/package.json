@@ -1,0 +1,35 @@
+{
+  "name": "events-company-web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Events Company first working slice: create, save, list and view events. Local demonstration only.",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "dev": "next dev -H 127.0.0.1 -p 3000",
+    "build": "next build",
+    "start": "next start -H 127.0.0.1 -p 3000",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "smoke": "node scripts/smoke.mjs",
+    "reset-data": "node scripts/reset-data.mjs"
+  },
+  "dependencies": {
+    "@electric-sql/pglite": "0.5.13",
+    "next": "16.4.3",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "24.19.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "axe-core": "4.14.0",
+    "jsdom": "29.1.1",
+    "typescript": "7.0.2",
+    "vitest": "5.0.5"
+  }
+}
